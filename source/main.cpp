@@ -1,5 +1,7 @@
 #include <random>
 #include <array>
+#include <ranges>
+#include <algorithm>
 #include <SFML/Graphics.hpp>
 
 constexpr int WIDTH = 10;
@@ -31,6 +33,17 @@ bool check()
     return true;
 }
 
+std::array<int, 7> gen7Bag()
+{
+    std::random_device rd;
+    std::mt19937 gen(rd());
+
+    std::array<int, 7> bag;
+    std::iota(bag.begin(), bag.end(), 0);
+    std::ranges::shuffle(bag, gen);
+    return bag;
+}
+
 int main()
 {
     sf::RenderWindow window(sf::VideoMode(320, 480), "Tetris");
@@ -46,10 +59,12 @@ int main()
 
     sf::Clock clock;
 
-    std::uniform_int_distribution<int> genTetromino(0, 6);
+    // std::uniform_int_distribution<int> genTetromino(0, 6);   // real random
     std::uniform_int_distribution<int> genColor(1, 7);
     int colorIndex = genColor(gen);
+    std::array<int, 7> bag = gen7Bag();
     
+    int bagIndex = 0;
     int dx = 0;
     bool rotate = false;
     float timer = 0, delay = 0.3;
@@ -128,8 +143,17 @@ int main()
                 {
                     gameField[previous[i].y][previous[i].x] = colorIndex;
                 }
+
                 colorIndex = genColor(gen);
-                int tetrominoIndex = genTetromino(gen);
+                // int tetrominoIndex = genTetromino(gen);
+
+                
+                int tetrominoIndex = bag[bagIndex++];
+                if(bagIndex == 7)
+                {
+                    bagIndex = 0;
+                    bag = gen7Bag();
+                }
                 for(int i = 0; i < 4; i++)
                 {
                     current[i].x = figures[tetrominoIndex][i] % 2 + 4;

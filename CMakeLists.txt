@@ -2,6 +2,9 @@ cmake_minimum_required(VERSION 3.29.1)
 
 project(tetris)
 
+set(CMAKE_CXX_STANDARD 23)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+
 find_package(SFML REQUIRED graphics)
 
 set(INC_LIST
