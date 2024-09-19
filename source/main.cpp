@@ -44,15 +44,34 @@ std::array<int, 7> gen7Bag()
     return bag;
 }
 
+void generateTetromino(std::array<int, 7>& bag, int& bagIndex)
+{
+    int tetrominoIndex = bag[bagIndex++];
+    if(bagIndex == 7)
+    {
+        bagIndex = 0;
+        bag = gen7Bag();
+    }
+
+    for(int i = 0; i < 4; i++)
+    {
+        current[i].x = figures[tetrominoIndex][i] % 2 + 4;
+        current[i].y = figures[tetrominoIndex][i] / 2;
+    }
+}
+
 int main()
 {
-    sf::RenderWindow window(sf::VideoMode(320, 480), "Tetris");
+    sf::RenderWindow window(sf::VideoMode(640, 960), "Tetris");
     sf::Texture t1, t2, t3;
 
     t1.loadFromFile("images/tiles.png");
     t2.loadFromFile("images/background.png");
     t3.loadFromFile("images/frame.png");
     sf::Sprite tiles(t1), background(t2), frame(t3);
+    tiles.setScale(2, 2);
+    background.setScale(2, 2);
+    frame.setScale(2, 2);
 
     std::random_device rd;
     std::mt19937 gen(rd());
@@ -68,6 +87,9 @@ int main()
     int dx = 0;
     bool rotate = false;
     float timer = 0, delay = 0.3;
+    
+    // Initialize block, is important. If we don't do this, there will be problems with the first block
+    generateTetromino(bag, bagIndex);   
     
     while(window.isOpen())
     {
@@ -147,18 +169,8 @@ int main()
                 colorIndex = genColor(gen);
                 // int tetrominoIndex = genTetromino(gen);
 
+                generateTetromino(bag, bagIndex);
                 
-                int tetrominoIndex = bag[bagIndex++];
-                if(bagIndex == 7)
-                {
-                    bagIndex = 0;
-                    bag = gen7Bag();
-                }
-                for(int i = 0; i < 4; i++)
-                {
-                    current[i].x = figures[tetrominoIndex][i] % 2 + 4;
-                    current[i].y = figures[tetrominoIndex][i] / 2;
-                }
             }
 
             timer = 0;
@@ -194,8 +206,8 @@ int main()
             {
                 if(gameField[i][j] == 0) continue;
                 tiles.setTextureRect(sf::IntRect(gameField[i][j] * 18, 0, 18, 18));
-                tiles.setPosition(j * 18, i * 18);
-                tiles.move(28, 31);
+                tiles.setPosition(j * 36, i * 36);
+                tiles.move(56, 62);
                 window.draw(tiles);
             }
         }
@@ -203,8 +215,8 @@ int main()
         for(int i = 0; i < 4; i++)
         {
             tiles.setTextureRect(sf::IntRect(colorIndex * 18, 0, 18, 18));
-            tiles.setPosition(current[i].x * 18, current[i].y * 18);
-            tiles.move(28, 31);
+            tiles.setPosition(current[i].x * 36, current[i].y * 36);
+            tiles.move(56, 62);
             window.draw(tiles);
         }
 
