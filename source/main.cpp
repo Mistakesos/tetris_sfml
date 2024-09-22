@@ -15,8 +15,8 @@ std::array<Point, 4> current, previous;
 std::array<std::array<int, 4>, 7> figures =
 {
     1, 3, 5, 7, // I
-    2, 4, 5, 7, // Z
-    3, 5, 4, 6, // S
+    2, 4, 5, 7, // S
+    3, 5, 4, 6, // Z
     3, 5, 4, 7, // T
     2, 3, 5, 7, // L
     3, 5, 7, 6, // J
@@ -44,7 +44,7 @@ std::array<int, 7> gen7Bag()
     return bag;
 }
 
-void generateTetromino(std::array<int, 7>& bag, int& bagIndex)
+int generateTetromino(std::array<int, 7>& bag, int& bagIndex)
 {
     int tetrominoIndex = bag[bagIndex++];
     if(bagIndex == 7)
@@ -58,13 +58,31 @@ void generateTetromino(std::array<int, 7>& bag, int& bagIndex)
         current[i].x = figures[tetrominoIndex][i] % 2 + 4;
         current[i].y = figures[tetrominoIndex][i] / 2;
     }
+
+    return tetrominoIndex;
+}
+
+int judgeColor(int tetrominoIndex)
+{
+    int colorIndex = tetrominoIndex;
+    switch(tetrominoIndex)
+    {
+        case 0: tetrominoIndex = 5; break;
+        case 1: tetrominoIndex = 3; break;
+        case 2: tetrominoIndex = 2; break;
+        case 3: tetrominoIndex = 1; break;
+        case 4: tetrominoIndex = 6; break;
+        case 5: tetrominoIndex = 7; break;
+        case 6: tetrominoIndex = 4; break;
+        default:tetrominoIndex = 1; break;
+    }
+    return tetrominoIndex;
 }
 
 int main()
 {
     sf::RenderWindow window(sf::VideoMode(640, 960), "Tetris");
     sf::Texture t1, t2, t3;
-
     t1.loadFromFile("images/tiles.png");
     t2.loadFromFile("images/background.png");
     t3.loadFromFile("images/frame.png");
@@ -78,19 +96,22 @@ int main()
 
     sf::Clock clock;
 
-    // std::uniform_int_distribution<int> genTetromino(0, 6);   // real random
-    std::uniform_int_distribution<int> genColor(1, 7);
-    int colorIndex = genColor(gen);
+    // std::uniform_int_distribution<int> genTetromino(0, 6);   // real random Tetromino generater
+    // std::uniform_int_distribution<int> genColor(1, 7);   // real random color generater
+    // int colorIndex = genColor(gen);  // Init real random generater
     std::array<int, 7> bag = gen7Bag();
-    
+
     int bagIndex = 0;
     int dx = 0;
     bool rotate = false;
     float timer = 0, delay = 0.3;
-    
-    // Initialize block, is important. If we don't do this, there will be problems with the first block
-    generateTetromino(bag, bagIndex);   
-    
+
+
+    // Init block, is important. If we don't do this, there will be problems with the first block
+    int tetrominoIndex = generateTetromino(bag, bagIndex);
+    // Init color
+    int colorIndex = judgeColor(tetrominoIndex);
+
     while(window.isOpen())
     {
         float time = clock.getElapsedTime().asSeconds();
@@ -127,7 +148,7 @@ int main()
                 current[i] = previous[i];
             }
         }
-        
+
 
         /* rotate */
         if(rotate)
@@ -148,7 +169,7 @@ int main()
                 }
             }
         }
-        
+
 
         /* generate */
         if(timer > delay)
@@ -166,11 +187,11 @@ int main()
                     gameField[previous[i].y][previous[i].x] = colorIndex;
                 }
 
-                colorIndex = genColor(gen);
-                // int tetrominoIndex = genTetromino(gen);
+                // int tetrominoIndex = genTetromino(gen);  // Real random Tetromino
+                tetrominoIndex = generateTetromino(bag, bagIndex);
 
-                generateTetromino(bag, bagIndex);
-                
+                // colorIndex = genColor(gen);  // Real random color
+                colorIndex = judgeColor(tetrominoIndex);
             }
 
             timer = 0;
@@ -189,7 +210,7 @@ int main()
             }
             if(count < WIDTH) preLine--;
         }
-        
+
 
         dx = 0;
         rotate = false;
@@ -211,7 +232,7 @@ int main()
                 window.draw(tiles);
             }
         }
-        
+
         for(int i = 0; i < 4; i++)
         {
             tiles.setTextureRect(sf::IntRect(colorIndex * 18, 0, 18, 18));
@@ -220,7 +241,7 @@ int main()
             window.draw(tiles);
         }
 
-        
+
         window.draw(frame);
         window.display();
 
