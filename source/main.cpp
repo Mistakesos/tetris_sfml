@@ -86,6 +86,11 @@ int main()
     t1.loadFromFile("../images/tiles.png");
     t2.loadFromFile("../images/background.png");
     t3.loadFromFile("../images/frame.png");
+
+    t1.setSmooth(true);
+    t2.setSmooth(true);
+    t3.setSmooth(true);
+    
     sf::Sprite tiles(t1), background(t2), frame(t3);
     tiles.setScale(2, 2);
     background.setScale(2, 2);
