@@ -83,9 +83,9 @@ int main()
 {
     sf::RenderWindow window(sf::VideoMode(640, 960), "Tetris");
     sf::Texture t1, t2, t3;
-    t1.loadFromFile("images/tiles.png");
-    t2.loadFromFile("images/background.png");
-    t3.loadFromFile("images/frame.png");
+    t1.loadFromFile("../images/tiles.png");
+    t2.loadFromFile("../images/background.png");
+    t3.loadFromFile("../images/frame.png");
     sf::Sprite tiles(t1), background(t2), frame(t3);
     tiles.setScale(2, 2);
     background.setScale(2, 2);
