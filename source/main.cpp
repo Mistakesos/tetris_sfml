@@ -15,12 +15,12 @@ std::array<Point, 4> current, previous;
 std::array<std::array<int, 4>, 7> figures =
 {
     1, 3, 5, 7, // I
-    2, 4, 5, 7, // S
-    3, 5, 4, 6, // Z
-    3, 5, 4, 7, // T
-    2, 3, 5, 7, // L
-    3, 5, 7, 6, // J
-    2, 3, 4, 5, // O
+    2, 4, 5, 7, // Z
+    6, 4, 5, 3, // S
+    4, 3, 5, 7, // T
+    2, 3, 5, 7, // J
+    6, 7, 5, 3, // L
+    2, 4, 3, 5, // O
 };
 
 bool check()
@@ -53,10 +53,22 @@ int generateTetromino(std::array<int, 7>& bag, int& bagIndex)
         bag = gen7Bag();
     }
 
-    for(int i = 0; i < 4; i++)
+    if(tetrominoIndex == 0) // Tetromino is I, X need plus 1;
     {
-        current[i].x = figures[tetrominoIndex][i] / 2 + 2;
-        current[i].y = figures[tetrominoIndex][i] % 2;
+        for(int i = 0; i < 4; i++)
+        {
+            current[i].x = figures[tetrominoIndex][i] / 2 + 3;
+            current[i].y = figures[tetrominoIndex][i] % 2;
+        }
+
+    }
+    else
+    {
+        for(int i = 0; i < 4; i++)
+        {
+            current[i].x = figures[tetrominoIndex][i] / 2 + 2;
+            current[i].y = figures[tetrominoIndex][i] % 2;
+        }
     }
 
     return tetrominoIndex;
@@ -68,11 +80,11 @@ int judgeColor(int tetrominoIndex)
     switch(colorIndex)
     {
         case 0: colorIndex = 5; break;
-        case 1: colorIndex = 3; break;
-        case 2: colorIndex = 2; break;
+        case 1: colorIndex = 2; break;
+        case 2: colorIndex = 3; break;
         case 3: colorIndex = 1; break;
-        case 4: colorIndex = 6; break;
-        case 5: colorIndex = 7; break;
+        case 4: colorIndex = 7; break;
+        case 5: colorIndex = 6; break;
         case 6: colorIndex = 4; break;
         default:colorIndex = 1; break;
     }
@@ -90,7 +102,7 @@ int main()
     t1.setSmooth(true);
     t2.setSmooth(true);
     t3.setSmooth(true);
-    
+
     sf::Sprite tiles(t1), background(t2), frame(t3);
     tiles.setScale(2, 2);
     background.setScale(2, 2);
@@ -105,12 +117,11 @@ int main()
     // std::uniform_int_distribution<int> genColor(1, 7);   // real random color generater
     // int colorIndex = genColor(gen);  // Init real random generater
     std::array<int, 7> bag = gen7Bag();
-
     int bagIndex = 0;
     int dx = 0;
     bool rotate = false;
     float timer = 0, delay = 1.f;
-
+    int statusI = 0;
 
     // Init block, is important. If we don't do this, there will be problems with the first block
     int tetrominoIndex = generateTetromino(bag, bagIndex);
@@ -158,19 +169,19 @@ int main()
         /* rotate */
         if(rotate)
         {
-            Point center = current[1];
+            Point center = current[2];
+
             if(tetrominoIndex == 0)
             {
+                statusI++;
                 center = current[1];
+                if(statusI == 2) // Tetromino is I, rotate center need change
+                {
+                    center = current[2];
+                    statusI = 0;
+                }
             }
-            else if(tetrominoIndex == 4)
-            {
-                center = current[2];
-            }
-            else if(tetrominoIndex == 5)
-            {
-                center = current[2];
-            }
+
 
             for(int i = 0; i < 4; i++)
             {
