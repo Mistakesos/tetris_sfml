@@ -55,8 +55,8 @@ int generateTetromino(std::array<int, 7>& bag, int& bagIndex)
 
     for(int i = 0; i < 4; i++)
     {
-        current[i].x = figures[tetrominoIndex][i] % 2 + 4;
-        current[i].y = figures[tetrominoIndex][i] / 2;
+        current[i].x = figures[tetrominoIndex][i] / 2 + 2;
+        current[i].y = figures[tetrominoIndex][i] % 2;
     }
 
     return tetrominoIndex;
@@ -65,18 +65,18 @@ int generateTetromino(std::array<int, 7>& bag, int& bagIndex)
 int judgeColor(int tetrominoIndex)
 {
     int colorIndex = tetrominoIndex;
-    switch(tetrominoIndex)
+    switch(colorIndex)
     {
-        case 0: tetrominoIndex = 5; break;
-        case 1: tetrominoIndex = 3; break;
-        case 2: tetrominoIndex = 2; break;
-        case 3: tetrominoIndex = 1; break;
-        case 4: tetrominoIndex = 6; break;
-        case 5: tetrominoIndex = 7; break;
-        case 6: tetrominoIndex = 4; break;
-        default:tetrominoIndex = 1; break;
+        case 0: colorIndex = 5; break;
+        case 1: colorIndex = 3; break;
+        case 2: colorIndex = 2; break;
+        case 3: colorIndex = 1; break;
+        case 4: colorIndex = 6; break;
+        case 5: colorIndex = 7; break;
+        case 6: colorIndex = 4; break;
+        default:colorIndex = 1; break;
     }
-    return tetrominoIndex;
+    return colorIndex;
 }
 
 int main()
@@ -109,7 +109,7 @@ int main()
     int bagIndex = 0;
     int dx = 0;
     bool rotate = false;
-    float timer = 0, delay = 0.3;
+    float timer = 0, delay = 1.f;
 
 
     // Init block, is important. If we don't do this, there will be problems with the first block
@@ -159,6 +159,19 @@ int main()
         if(rotate)
         {
             Point center = current[1];
+            if(tetrominoIndex == 0)
+            {
+                center = current[1];
+            }
+            else if(tetrominoIndex == 4)
+            {
+                center = current[2];
+            }
+            else if(tetrominoIndex == 5)
+            {
+                center = current[2];
+            }
+
             for(int i = 0; i < 4; i++)
             {
                 int x = current[i].y - center.y;
@@ -219,7 +232,7 @@ int main()
 
         dx = 0;
         rotate = false;
-        delay = 0.3;
+        delay = 1.f;
 
 
         /* draw */
