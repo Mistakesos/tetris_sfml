@@ -20,7 +20,37 @@ std::array<std::array<int, 4>, 7> figures =
     4, 3, 5, 7, // T
     2, 3, 5, 7, // J
     6, 7, 5, 3, // L
-    2, 4, 3, 5, // O
+    4, 2, 3, 5, // O
+};
+
+const std::array<std::array<Point, 5>, 4> IRightWallKicks =
+{
+    Point{0, 0}, Point{-2, 0}, Point{1, 0}, Point{-2, -1}, Point{1, 2},     // 0->R
+    Point{0, 0}, Point{2, 0}, Point{-1, 0}, Point{2, 1}, Point{-1, -2},     // R->0
+    Point{0, 0}, Point{-1, 0}, Point{2, 0}, Point{-1, 2}, Point{2, -1},     // R->2
+    Point{0, 0}, Point{1, 0}, Point{-2, 0}, Point{1, -2}, Point{-2, 1}      // 2->R
+};
+const std::array<std::array<Point, 5>, 4> ILeftWallKicks =
+{
+    Point{0, 0}, Point{2, 0}, Point{-1, 0}, Point{2, 1}, Point{-1, 2},      // 2->L
+    Point{0, 0}, Point{-2, 0}, Point{1, 0}, Point{-2, -1}, Point{1, 2},     // L->2
+    Point{0, 0}, Point{1, 0}, Point{-2, 0}, Point{1, -2}, Point{-2, 1},     // L->0
+    Point{0, 0}, Point{-1, 0}, Point{2, 0}, Point{-1, 2}, Point{2, -1}      // 0->L
+};
+
+const std::array<std::array<Point, 5>, 4> JLSTZRightWallKicks =
+{
+    Point{0, 0}, Point{-1, 0}, Point{-1, 1}, Point{0, -2}, Point{-1, -2},   // 0->R
+    Point{0, 0}, Point{1, 0}, Point{1, -1}, Point{0, 2}, Point{1, 2},       // R->0
+    Point{0, 0}, Point{1, 0}, Point{1, -1}, Point{0, 2}, Point{1, 2},       // R->2
+    Point{0, 0}, Point{-1, 0}, Point{-1, 1}, Point{0, -2}, Point{-1, -2}    // 2->R
+};
+const std::array<std::array<Point, 5>, 4> JLSTZLeftWallKicks =
+{
+    Point{0, 0}, Point{1, 0}, Point{1, 1}, Point{0, -2}, Point{1, -2},      // 2->L
+    Point{0, 0}, Point{-1, 0}, Point{-1, -1}, Point{0, 2}, Point{-1, 2},    // L->2
+    Point{0, 0}, Point{-1, 0}, Point{-1, -1}, Point{0, 2}, Point{-1, 2},    // L->0
+    Point{0, 0}, Point{1, 0}, Point{1, 1}, Point{0, -2}, Point{1, -2}       // 0->L
 };
 
 bool check()
@@ -32,6 +62,78 @@ bool check()
     }
     return true;
 }
+
+void rotate(int& tetrominoIndex, std::array<Point, 4>& current, std::array<Point, 4>& previous, int& rotationState, int& statusI, bool& isRotateRight, bool& isRoteteLeft)
+{
+    Point center = current[2];
+
+    if(tetrominoIndex == 0 || tetrominoIndex == 6)
+    {
+        center = current[1];
+        statusI++;
+        if(statusI == 2) // Tetromino is I, rotate center need change
+        {
+            center = current[2];
+            statusI = 0;
+        }
+    }
+
+    previous = current;
+
+    if(isRotateRight)
+    {
+        for(int i = 0; i < 4; i++)
+        {
+            int x = current[i].y - center.y;
+            int y = current[i].x - center.x;
+            current[i].x = center.x - x;
+            current[i].y = center.y + y;
+        }
+    }
+    else if(isRoteteLeft)
+    {
+        for(int i = 0; i < 4; i++)
+        {
+            int x = current[i].y - center.y;
+            int y = current[i].x - center.x;
+            current[i].x = center.x + x;
+            current[i].y = center.y - y;
+        }
+    }
+
+    if(check())
+    {
+        rotationState = (isRotateRight) ? (rotationState + 1) % 4 : (rotationState + 3) % 4;
+        return;
+    }
+
+    const auto& wallKicks = (tetrominoIndex == 0) ? (isRotateRight ? IRightWallKicks : ILeftWallKicks) : (isRotateRight ? JLSTZRightWallKicks : JLSTZLeftWallKicks);
+    int newRotationState = (isRotateRight) ? (rotationState + 1) % 4 : (rotationState + 3) % 4;
+
+    for(const auto& offset : wallKicks[rotationState])
+    {
+        for(int i = 0; i < 4; i++)
+        {
+            current[i].x += offset.x;
+            current[i].y += offset.y;
+        }
+    
+        if(check())
+        {
+            rotationState = newRotationState;
+            return;
+        }
+
+        for(int i = 0; i < 4; i++)
+        {
+            current[i].x -= offset.x;
+            current[i].y -= offset.y;
+        }
+    }
+
+    current = previous;
+}
+
 
 std::array<int, 7> gen7Bag()
 {
@@ -119,14 +221,19 @@ int main()
     std::array<int, 7> bag = gen7Bag();
     int bagIndex = 0;
     int dx = 0;
-    bool rotate = false;
+    bool isRotateRight = false;
+    bool isRotateLeft = false;
     float timer = 0, delay = 1.f;
     int statusI = 0;
+    int rotationState = 0;
+
+
 
     // Init block, is important. If we don't do this, there will be problems with the first block
     int tetrominoIndex = generateTetromino(bag, bagIndex);
     // Init color
     int colorIndex = judgeColor(tetrominoIndex);
+
 
     while(window.isOpen())
     {
@@ -142,7 +249,8 @@ int main()
             if(event.type == sf::Event::Closed) window.close();
             if(event.type == sf::Event::KeyPressed)
             {
-                if(event.key.code == sf::Keyboard::Up) rotate = true;
+                if(event.key.code == sf::Keyboard::Up) isRotateRight = true;
+                else if(event.key.code == sf::Keyboard::Z) isRotateLeft = true;
                 else if(event.key.code == sf::Keyboard::Left) dx = -1;
                 else if(event.key.code == sf::Keyboard::Right) dx = 1;
             }
@@ -167,36 +275,9 @@ int main()
 
 
         /* rotate */
-        if(rotate)
+        if(isRotateRight || isRotateLeft)
         {
-            Point center = current[2];
-
-            if(tetrominoIndex == 0)
-            {
-                statusI++;
-                center = current[1];
-                if(statusI == 2) // Tetromino is I, rotate center need change
-                {
-                    center = current[2];
-                    statusI = 0;
-                }
-            }
-
-
-            for(int i = 0; i < 4; i++)
-            {
-                int x = current[i].y - center.y;
-                int y = current[i].x - center.x;
-                current[i].x = center.x - x;
-                current[i].y = center.y + y;
-            }
-            if(!check())
-            {
-                for(int i = 0; i < 4; i++)
-                {
-                    current[i] = previous[i];
-                }
-            }
+            rotate(tetrominoIndex, current, previous, rotationState, statusI, isRotateRight, isRotateLeft);
         }
 
 
@@ -242,7 +323,8 @@ int main()
 
 
         dx = 0;
-        rotate = false;
+        isRotateRight = false;
+        isRotateLeft = false;
         delay = 1.f;
 
 
