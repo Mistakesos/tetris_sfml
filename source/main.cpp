@@ -23,35 +23,37 @@ std::array<std::array<int, 4>, 7> figures =
     4, 2, 3, 5, // O
 };
 
-const std::array<std::array<Point, 5>, 4> IRightWallKicks =
+const std::array<std::array<Point, 5>, 4> JLSTZOffsets =
 {
-    Point{0, 0}, Point{-2, 0}, Point{1, 0}, Point{-2, -1}, Point{1, 2},     // 0->R
-    Point{0, 0}, Point{2, 0}, Point{-1, 0}, Point{2, 1}, Point{-1, -2},     // R->0
-    Point{0, 0}, Point{-1, 0}, Point{2, 0}, Point{-1, 2}, Point{2, -1},     // R->2
-    Point{0, 0}, Point{1, 0}, Point{-2, 0}, Point{1, -2}, Point{-2, 1}      // 2->R
-};
-const std::array<std::array<Point, 5>, 4> ILeftWallKicks =
-{
-    Point{0, 0}, Point{2, 0}, Point{-1, 0}, Point{2, 1}, Point{-1, 2},      // 2->L
-    Point{0, 0}, Point{-2, 0}, Point{1, 0}, Point{-2, -1}, Point{1, 2},     // L->2
-    Point{0, 0}, Point{1, 0}, Point{-2, 0}, Point{1, -2}, Point{-2, 1},     // L->0
-    Point{0, 0}, Point{-1, 0}, Point{2, 0}, Point{-1, 2}, Point{2, -1}      // 0->L
+    // Rotation state 0
+    Point{0, 0}, Point{0, 0}, Point{0, 0}, Point{0, 0}, Point{0, 0},
+    // Rotation state R
+    Point{0, 0}, Point{1, 0}, Point{1, -1}, Point{0, 2}, Point{1, 2},
+    // Rotation state 2
+    Point{0, 0}, Point{0, 0}, Point{0, 0}, Point{0, 0}, Point{0, 0},
+    // Rotation state L
+    Point{0, 0}, Point{-1, 0}, Point{-1, -1}, Point{0, 2}, Point{-1, 2}
 };
 
-const std::array<std::array<Point, 5>, 4> JLSTZRightWallKicks =
+const std::array<std::array<Point, 5>, 4> IOffset =
 {
-    Point{0, 0}, Point{-1, 0}, Point{-1, 1}, Point{0, -2}, Point{-1, -2},   // 0->R
-    Point{0, 0}, Point{1, 0}, Point{1, -1}, Point{0, 2}, Point{1, 2},       // R->0
-    Point{0, 0}, Point{1, 0}, Point{1, -1}, Point{0, 2}, Point{1, 2},       // R->2
-    Point{0, 0}, Point{-1, 0}, Point{-1, 1}, Point{0, -2}, Point{-1, -2}    // 2->R
+    // Rotation state 0
+    Point{0, 0}, Point{-1, 0}, Point{2, 0}, Point{-1, 0}, Point{2, 0},
+    // Rotation state R
+    Point{-1, 0}, Point{0, 0}, Point{0, 0}, Point{0, 1}, Point{0, -2},
+    // Rotation state 2
+    Point{-1, 1}, Point{1, 1}, Point{-2, 1}, Point{1, 0}, Point{-2, 0},
+    // Rotation state L
+    Point{0, 1}, Point{0, 1}, Point{0, 1}, Point{0, -1}, Point{0, 2}
 };
-const std::array<std::array<Point, 5>, 4> JLSTZLeftWallKicks =
-{
-    Point{0, 0}, Point{1, 0}, Point{1, 1}, Point{0, -2}, Point{1, -2},      // 2->L
-    Point{0, 0}, Point{-1, 0}, Point{-1, -1}, Point{0, 2}, Point{-1, 2},    // L->2
-    Point{0, 0}, Point{-1, 0}, Point{-1, -1}, Point{0, 2}, Point{-1, 2},    // L->0
-    Point{0, 0}, Point{1, 0}, Point{1, 1}, Point{0, -2}, Point{1, -2}       // 0->L
-};
+
+const std::array<std::array<Point, 5>, 4> OOffset =
+{{
+    {Point{0, 0}},    // Rotation state 0
+    {Point{0, -1}},   // Rotation state R
+    {Point{-1, -1}},  // Rotation state 2
+    {Point{-1, 0}}    // Rotation state L
+}};
 
 bool check()
 {
@@ -63,15 +65,30 @@ bool check()
     return true;
 }
 
-void rotate(int& tetrominoIndex, std::array<Point, 4>& current, std::array<Point, 4>& previous, int& rotationState, int& statusI, bool& isRotateRight, bool& isRoteteLeft)
+enum class rotateStates
+{
+    ZERO,
+    RIGHT,
+    TWO,
+    LEFT
+
+};
+
+void rotate(int& tetrominoIndex, std::array<Point, 4>& current, std::array<Point, 4>& previous, int& statusI, int& rotationState, bool& isRotateRight)
 {
     Point center = current[2];
 
-    if(tetrominoIndex == 0 || tetrominoIndex == 6)
+    if(tetrominoIndex == 6)
+    {
+        return;
+    }
+    
+    
+    if(tetrominoIndex == 0)
     {
         center = current[1];
         statusI++;
-        if(statusI == 2) // Tetromino is I, rotate center need change
+        if(statusI == 2)
         {
             center = current[2];
             statusI = 0;
@@ -90,7 +107,7 @@ void rotate(int& tetrominoIndex, std::array<Point, 4>& current, std::array<Point
             current[i].y = center.y + y;
         }
     }
-    else if(isRoteteLeft)
+    else
     {
         for(int i = 0; i < 4; i++)
         {
@@ -107,31 +124,34 @@ void rotate(int& tetrominoIndex, std::array<Point, 4>& current, std::array<Point
         return;
     }
 
-    const auto& wallKicks = (tetrominoIndex == 0) ? (isRotateRight ? IRightWallKicks : ILeftWallKicks) : (isRotateRight ? JLSTZRightWallKicks : JLSTZLeftWallKicks);
-    int newRotationState = (isRotateRight) ? (rotationState + 1) % 4 : (rotationState + 3) % 4;
+    const auto& offsets = (tetrominoIndex == 0) ? IOffset : (tetrominoIndex == 6) ? OOffset : JLSTZOffsets;
 
-    for(const auto& offset : wallKicks[rotationState])
+    int preRotationState = rotationState;
+    rotationState = (isRotateRight) ? (rotationState + 1) % 4 : (rotationState + 3) % 4;
+
+    for(int i = 0; i < 5; i++)
     {
-        for(int i = 0; i < 4; i++)
+        int dx = offsets[preRotationState][i].x - offsets[rotationState][i].x;
+        int dy = offsets[preRotationState][i].y - offsets[rotationState][i].y;
+
+
+        for(int j = 0; j < 4; j++)
         {
-            current[i].x += offset.x;
-            current[i].y += offset.y;
-        }
-    
-        if(check())
-        {
-            rotationState = newRotationState;
-            return;
+            current[j].x += dx;
+            current[j].y += dy;
         }
 
-        for(int i = 0; i < 4; i++)
+        if(check()) return;
+
+        for(int j = 0; j < 4; j++)
         {
-            current[i].x -= offset.x;
-            current[i].y -= offset.y;
+            current[j].x -= dx;
+            current[j].y -= dy;
         }
     }
 
     current = previous;
+    rotationState = preRotationState;
 }
 
 
@@ -223,8 +243,8 @@ int main()
     int dx = 0;
     bool isRotateRight = false;
     bool isRotateLeft = false;
-    float timer = 0, delay = 1.f;
     int statusI = 0;
+    float timer = 0, delay = 1.f;
     int rotationState = 0;
 
 
@@ -277,7 +297,7 @@ int main()
         /* rotate */
         if(isRotateRight || isRotateLeft)
         {
-            rotate(tetrominoIndex, current, previous, rotationState, statusI, isRotateRight, isRotateLeft);
+            rotate(tetrominoIndex, current, previous, statusI, rotationState, isRotateRight);
         }
 
 
@@ -299,6 +319,9 @@ int main()
 
                 // int tetrominoIndex = genTetromino(gen);  // Real random Tetromino
                 tetrominoIndex = generateTetromino(bag, bagIndex);
+
+                // reset Rotation state
+                rotationState = 0;
 
                 // colorIndex = genColor(gen);  // Real random color
                 colorIndex = judgeColor(tetrominoIndex);
