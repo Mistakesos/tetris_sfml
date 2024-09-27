@@ -65,15 +65,6 @@ bool check()
     return true;
 }
 
-enum class rotateStates
-{
-    ZERO,
-    RIGHT,
-    TWO,
-    LEFT
-
-};
-
 void rotate(int& tetrominoIndex, std::array<Point, 4>& current, std::array<Point, 4>& previous, int& statusI, int& rotationState, bool& isRotateRight)
 {
     Point center = current[2];
