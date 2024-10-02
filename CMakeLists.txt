@@ -14,7 +14,7 @@ set(INC_LIST
 include_directories(${INC_LIST})
 
 
-aux_source_directory(${PROJECT_SOURCE_DIR}/source SRC_LIST)
+aux_source_directory(${PROJECT_SOURCE_DIR}/src SRC_LIST)
 
 # set(SRC_LIST
 #     ${PROJECT_SOURCE_DIR}/source
@@ -22,6 +22,6 @@ aux_source_directory(${PROJECT_SOURCE_DIR}/source SRC_LIST)
 
 add_executable(tetris ${SRC_LIST})
 
-target_link_libraries(tetris sfml-graphics)
+target_link_libraries(tetris sfml-graphics sfml-system)
 
 set(EXECUTABLE_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/bin)
