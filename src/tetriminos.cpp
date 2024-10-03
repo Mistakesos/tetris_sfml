@@ -21,7 +21,8 @@ const std::array<std::array<int, 4>, 7> Tetrimino::get_tetrimino()
     return shapes;
 }
 
-// 
+
+// Generate 7-bag
 std::array<Shapes, 7> Tetrimino::gen7Bag()
 {
     std::random_device rd;
@@ -32,6 +33,90 @@ std::array<Shapes, 7> Tetrimino::gen7Bag()
     return bag;
 }
 
+
+const std::array<Point, 5> Tetrimino::get_offsets(Shapes shape, int& preRotationState, int& rotationState)
+{
+    if(shape == Shapes::I)
+    {
+        switch(preRotationState)
+        {
+            case 0:
+            {
+                switch(rotationState)
+                {
+                    case 1: return {{{0, 0}, {-2, 0}, {1, 0}, {-2, -1}, {1, 2}}};
+                    case 3: return {{{0, 0}, {-1, 0}, {2, 0}, {-1, 2}, {2, -1}}};
+                }
+            }
+            case 1:
+            {
+                switch(rotationState)
+                {
+                    case 2: return {{{0, 0}, {-1, 0}, {2, 0}, {-1, 2}, {2, -1}}};
+                    case 0: return {{{0, 0}, {2, 0}, {-1, 0}, {2, 1}, {-1, -2}}};
+                }
+            }
+            case 2:
+            {
+                switch(rotationState)
+                {
+                    case 3: return {{{0, 0}, {2, 0}, {-1, 0}, {2, 1}, {-1, -2}}};
+                    case 1: return {{{0, 0}, {1, 0}, {-2, 0}, {1, -2}, {-2, 1}}};
+                }
+            }
+            case 3:
+            {
+                switch(rotationState)
+                {
+                    case 0: return {{{0, 0}, {1, 0}, {-2, 0}, {1, -2}, {-2, 1}}};
+                    case 2: return {{{0, 0}, {-2, 0}, {1, 0}, {-2, -1}, {1, 2}}};
+                }
+            }
+        }
+    }
+    else
+    {
+        switch(preRotationState)
+        {
+            case 0:
+            {
+                switch(rotationState)
+                {
+                    case 1: return {{{0, 0}, {-1, 0}, {-1, 1}, {0, -2}, {-1, -2}}};
+                    case 3: return {{{0, 0}, {1, 0}, {1, 1}, {0, -2}, {1, -2}}};
+                }
+            }
+            case 1:
+            {
+                switch(rotationState)
+                {
+                    case 2: return {{{0, 0}, {1, 0}, {1, -1}, {0, 2}, {1, 2}}};
+                    case 0: return {{{0, 0}, {1, 0}, {1, -1}, {0, 2}, {1, 2}}};
+                }
+            }
+            case 2:
+            {
+                switch(rotationState)
+                {
+                    case 3: return {{{0, 0}, {1, 0}, {1, 1}, {0, -2}, {1, -2}}};
+                    case 1: return {{{0, 0}, {-1, 0}, {-1, 1}, {0, -2}, {-1, -2}}};
+                }
+            }
+            case 3:
+            {
+                switch(rotationState)
+                {
+                    case 0: return {{{0, 0}, {-1, 0}, {-1, -1}, {0, 2}, {-1, 2}}};
+                    case 2: return {{{0, 0}, {-1, 0}, {-1, -1}, {0, 2}, {-1, 2}}};
+                }
+            }
+        }
+    }
+
+    return {0};
+}
+
+
 // Try to rotate the tetrimino!
 void Tetrimino::rotate(Matrix& matrix, Shapes tetriminoShape, std::array<Point, 4> &current, std::array<Point, 4> &previous, int& rotationState, bool isRotateRight)
 {
@@ -39,24 +124,60 @@ void Tetrimino::rotate(Matrix& matrix, Shapes tetriminoShape, std::array<Point, 
 
     previous = current;
 
-    // O needn't ratate so far
-    if(tetriminoShape == Shapes::O)
-    {
-        return;
-    }
+    // if(tetriminoShape == Shapes::O)
+    // {
+    //     // O needn't ratate so far
+    //     return;
+    // }
 
-    // If it's I, we need calculate the center of rotation
-    if(tetriminoShape == Shapes::I)
+    if(tetriminoShape == Shapes::I || tetriminoShape == Shapes::O)
     {
-        float center_x = (current[1].x + current[2].x) / 2.f;
-        float center_y = (current[1].y + current[2].y) / 2.f;
+        // If it's I or O, we need calculate the center of rotation then rotate
+        float center_x = 0;
+        float center_y = 0;
 
-        switch(rotationState)
+        if(tetriminoShape == Shapes::I)
         {
-            case 0: center_y += 0.5f; break;
-            case 1: center_x -= 0.5f; break;
-            case 2: center_y -= 0.5f; break;
-            case 3: center_x += 0.5f; break;
+            center_x = (current[1].x + current[2].x) / 2.f;
+            center_y = (current[1].y + current[2].y) / 2.f;
+
+            switch(rotationState)
+            {
+                case 0: center_y += 0.5f; break;
+                case 1: center_x -= 0.5f; break;
+                case 2: center_y -= 0.5f; break;
+                case 3: center_x += 0.5f; break;
+            }
+        }
+        else
+        {
+            switch(rotationState)
+            {
+                case 0:
+                {
+                    center_x = (current[0].x + current[1].x) / 2.f;
+                    center_y = (current[1].y + current[2].y) / 2.f;
+                }
+                    break;
+                case 1:
+                {
+                    center_x = (current[1].x + current[2].x) / 2.f;
+                    center_y = (current[2].y + current[3].y) / 2.f;
+                }
+                    break;
+                case 2:
+                {
+                    center_x = (current[2].x + current[3].x) / 2.f;
+                    center_y = (current[3].y + current[0].y) / 2.f;
+                }
+                    break;
+                case 3:
+                {
+                    center_x = (current[3].x + current[0].x) / 2.f;
+                    center_y = (current[0].y + current[1].y) / 2.f;
+                }
+                    break;
+            }
         }
 
         for(int i = 0; i < 4; i++)
@@ -76,9 +197,9 @@ void Tetrimino::rotate(Matrix& matrix, Shapes tetriminoShape, std::array<Point, 
             }
         }
     }
-    else    // Other tetriminos, the offsets is the same
+    else
     {
-
+        // For other tetriminos, centers is the same one, rotate directly
         for(int i = 0; i < 4; i++)
         {
             int x = current[i].y - center.y;
@@ -97,41 +218,63 @@ void Tetrimino::rotate(Matrix& matrix, Shapes tetriminoShape, std::array<Point, 
         }
     }
 
-    // Is valid rotation, return then update rotation state
     if(matrix.check(current, matrix))
     {
+        // Is valid rotation, return then update rotation state
         rotationState = (isRotateRight) ? (rotationState + 1) % 4 : (rotationState + 3) % 4;
         return;
     }
 
-    // Judge which offsets are we needed, if I, IOffset, if O, OOffset, else otherOffset
-    const auto& offsets = (tetriminoShape == Shapes::I) ? IOffset : (tetriminoShape == Shapes::O) ? OOffset : otherOffset;
-
+    // Save rotation state to previous state
     int preRotationState = rotationState;
+
+    // Update rotation state
     rotationState = (isRotateRight) ? (rotationState + 1) % 4 : (rotationState + 3) % 4;
 
+    // Judge which offsets are we needed, if I, IOffset, else otherOffset
+    const auto offsets = get_offsets(tetriminoShape, preRotationState, rotationState);
+
+    // Try to kick wall
+    current = kickWall(matrix, current, previous, offsets, preRotationState, rotationState);
+}
+
+
+// Kick wall, if valid, return it, invalid, return previous one
+std::array<Point, 4> Tetrimino::kickWall(Matrix& matrix, std::array<Point, 4>& current, std::array<Point, 4>& previous, const std::array<Point, 5>& offsets, int& preRotationState, int& rotationState)
+{
+
+    // Try to kick wall --plus the offsets, try 5 times
     for(int i = 0; i < 5; i++)
     {
-        int dx = offsets[preRotationState][i].x - offsets[rotationState][i].x;
-        int dy = offsets[preRotationState][i].y - offsets[rotationState][i].y;
+        int dx = offsets[i].x;
+        int dy = offsets[i].y;
 
-
+        // Every Point needs to plus the offsets, 4 times
         for(int j = 0; j < 4; j++)
         {
             current[j].x += dx;
             current[j].y += dy;
         }
 
-        // Is valid， return, needn't unset the offsets
-        if(matrix.check(current, matrix)) return;   
-
-        // Action is not valid, unset offsets then reset tetrimino status and rotationState
-        for(int j = 0; j < 4; j++)
+        if(matrix.check(current, matrix))
         {
-            current[j].x -= dx;
-            current[j].y -= dy;
+            // If it's valid after kick wall, return current(kicked)
+            return current;
+        }
+        else
+        {
+            // It's invalid even after kick wall, reset offsets
+            for(int j = 0; j < 4; j++)
+            {
+                current[j].x -= dx;
+                current[j].y -= dy;
+            }
         }
     }
-    current = previous;                 // Reset tetrimino status
-    rotationState = preRotationState;   // Reset tetrimino rotation state
+
+    // All positions is invalid after kick wall, reset rotation state to previous rotation state, then return previous tetrimino
+    current = previous;
+    rotationState = preRotationState;
+
+    return current;
 }

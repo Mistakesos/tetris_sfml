@@ -17,3 +17,5 @@ enum class Colors
     ORANGE = 6,
     YELLOW = 4
 };
+
+enum class States {ZERO, RIGHT, TWO, LEFT};

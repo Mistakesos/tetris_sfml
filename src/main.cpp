@@ -34,7 +34,7 @@ int main()
     Matrix matrix;
     Tetrimino tetrimino;
     // matrix.m_matrix = {ROWS, std::vector<int>(COLS, 0)};
-    matrix.m_matrix = {40, std::vector<int>(20, 0)};
+    matrix.m_matrix = {ROWS, std::vector<int>(COLS, 0)};
     std::array<Point, 4> current, previous; 
 
     std::array<Shapes, 7> bag = tetrimino.gen7Bag();
