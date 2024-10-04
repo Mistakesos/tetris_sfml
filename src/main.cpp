@@ -7,6 +7,7 @@
 
 int main()
 {
+    /* Textures */
     sf::RenderWindow window(sf::VideoMode(640, 960), "Tetris");
     sf::Texture t1, t2, t3;
     t1.loadFromFile("../images/tiles.png");
@@ -21,36 +22,42 @@ int main()
     tiles.setScale(2, 2);
     background.setScale(2, 2);
     frame.setScale(2, 2);
+    /* Textures */
 
+    // Creat random engine
     std::random_device rd;
     std::mt19937 gen(rd());
 
+    // Init timer
     sf::Clock clock;
 
-    // std::uniform_int_distribution<int> genTetromino(0, 6);   // real random Tetromino generater
-    // std::uniform_int_distribution<int> genColor(1, 7);   // real random color generater
-    // int colorIndex = genColor(gen);  // Init real random generater
-
+    // Init game matrix and tetrimino
     Matrix matrix;
     Tetrimino tetrimino;
-    // matrix.m_matrix = {ROWS, std::vector<int>(COLS, 0)};
     matrix.m_matrix = {ROWS, std::vector<int>(COLS, 0)};
-    std::array<Point, 4> current, previous; 
+    std::array<Point, 4> current, previous;
 
+    // Generate 7-bag
     std::array<Shapes, 7> bag = tetrimino.gen7Bag();
     int bagIndex = 0;
+
+    // Offset of X
     int dx = 0;
+
+    // Variables related to rotation
     bool isRotateRight = false;
     bool isRotateLeft = false;
-    float timer = 0, delay = 100.f;
     int rotationState = 0;
+
+    // Timer and delay
+    float timer = 0, delay = 100.f;
 
     // Init block, is important. If we don't do this, there will be problems with the first block
     Shapes tetriminoShape = matrix.generateTetromino(matrix, tetrimino, current, bag, bagIndex);
     // Init color
     Colors tetriminoColor = matrix.judgeColor(tetriminoShape);
 
-
+    // Game main loop
     while(window.isOpen())
     {
         float time = clock.getElapsedTime().asSeconds();
@@ -58,7 +65,8 @@ int main()
 
         timer += time;
 
-        /* trick */
+
+        /* Input */
         sf::Event event;
         while(window.pollEvent(event))
         {
@@ -75,81 +83,36 @@ int main()
         if(sf::Keyboard::isKeyPressed(sf::Keyboard::Down)) delay = 0.05;
 
 
-        /* move */
-        for(int i = 0; i < 4; i++)
-        {
-            previous[i] = current[i];
-            current[i].x += dx;
-        }
-        if(!matrix.check(current, matrix))
-        {
-            for(int i = 0; i < 4; i++)
-            {
-                current[i] = previous[i];
-            }
-        }
+        /* Move */
+        tetrimino.move_tetrimino(current, previous, matrix, dx);
 
 
-        /* rotate */
+        /* Rotate */
         if(isRotateRight || isRotateLeft)
         {
             tetrimino.rotate(matrix, tetriminoShape, current, previous, rotationState, isRotateRight);
         }
 
 
-        /* generate */
+        /* Drop down tetrimino then generate it */
         if(timer > delay)
         {
-            for(int i = 0; i < 4; i++)
-            {
-                previous[i] = current[i];
-                current[i].y += 1;
-            }
-
-            if(!matrix.check(current, matrix))
-            {
-                for(int i = 0; i < 4; i++)
-                {
-                    // Sadly, we need the enum value again, but I still wanna use enum class, not classic enum|_|
-                    int colorIndex = static_cast<int>(tetriminoColor);
-                    matrix.m_matrix[previous[i].y][previous[i].x] = colorIndex;
-                }
-
-                // int tetrominoIndex = genTetromino(gen);  // Real random Tetromino
-                tetriminoShape = matrix.generateTetromino(matrix, tetrimino, current, bag, bagIndex);
-
-                // reset Rotation state
-                rotationState = 0;
-
-                // colorIndex = genColor(gen);  // Real random color
-                tetriminoColor = matrix.judgeColor(tetriminoShape);
-            }
-
-            timer = 0;
+            matrix.drop_and_generate(current, previous, matrix, tetrimino, bag, bagIndex, tetriminoShape, tetriminoColor, rotationState, timer);
         }
 
 
-        /* check lines */
-        int preLine = ROWS - 1;
-        for(int i = ROWS - 1; i > 0; i--)
-        {
-            int count = 0;
-            for(int j = 0; j < COLS; j++)
-            {
-                if(matrix.m_matrix[i][j]) count++;
-                matrix.m_matrix[preLine][j] = matrix.m_matrix[i][j];
-            }
-            if(count < COLS) preLine--;
-        }
+        /* Check for full rows and clear them */
+        matrix.clear_lines(matrix);
 
 
+        // Reset them, prepare for next loop
         dx = 0;
         isRotateRight = false;
         isRotateLeft = false;
         delay = 100.f;
 
 
-        /* draw */
+        /* Draw */
         window.clear(sf::Color::White);
         window.draw(background);
 

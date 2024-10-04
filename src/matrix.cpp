@@ -62,3 +62,49 @@ Colors Matrix::judgeColor(Shapes tetriminoShape)
     }
     return Colors::CYAN;
 }
+
+void Matrix::drop_and_generate(std::array<Point, 4> &current, std::array<Point, 4> &previous, Matrix &matrix, Tetrimino& tetrimino, std::array<Shapes, 7>& bag, int& bagIndex, Shapes &tetriminoShape, Colors &tetriminoColor, int &rotationState, float &timer)
+{
+    for(int i = 0; i < 4; i++)
+    {
+        previous[i] = current[i];
+        current[i].y += 1;
+    }
+
+    if(!matrix.check(current, matrix))
+    {
+        for(int i = 0; i < 4; i++)
+        {
+            // Sadly, we need the enum value again, but I still wanna use enum class, not classic enum|_|
+            int colorIndex = static_cast<int>(tetriminoColor);
+            matrix.m_matrix[previous[i].y][previous[i].x] = colorIndex;
+        }
+
+        // int tetrominoIndex = genTetromino(gen);  // Real random Tetromino
+        tetriminoShape = matrix.generateTetromino(matrix, tetrimino, current, bag, bagIndex);
+
+        // reset Rotation state
+        rotationState = 0;
+
+        // colorIndex = genColor(gen);  // Real random color
+        tetriminoColor = matrix.judgeColor(tetriminoShape);
+    }
+
+    timer = 0;
+
+}
+
+void Matrix::clear_lines(Matrix& matrix)
+{
+    int preLine = ROWS - 1;
+    for(int i = ROWS - 1; i > 0; i--)
+    {
+        int count = 0;
+        for(int j = 0; j < COLS; j++)
+        {
+            if(matrix.m_matrix[i][j]) count++;
+            matrix.m_matrix[preLine][j] = matrix.m_matrix[i][j];
+        }
+        if(count < COLS) preLine--;
+    }
+}

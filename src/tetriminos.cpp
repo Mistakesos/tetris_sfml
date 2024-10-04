@@ -4,6 +4,7 @@ Tetrimino::Tetrimino() = default;
 
 Tetrimino::~Tetrimino() = default;
 
+// Embarrassingly, currently we have only returned an array and have not truly 'obtained' tetrimino
 const std::array<std::array<int, 4>, 7> Tetrimino::get_tetrimino()
 {
 
@@ -21,7 +22,6 @@ const std::array<std::array<int, 4>, 7> Tetrimino::get_tetrimino()
     return shapes;
 }
 
-
 // Generate 7-bag
 std::array<Shapes, 7> Tetrimino::gen7Bag()
 {
@@ -33,7 +33,7 @@ std::array<Shapes, 7> Tetrimino::gen7Bag()
     return bag;
 }
 
-
+// Get offsets
 const std::array<Point, 5> Tetrimino::get_offsets(Shapes shape, int& preRotationState, int& rotationState)
 {
     if(shape == Shapes::I)
@@ -116,6 +116,23 @@ const std::array<Point, 5> Tetrimino::get_offsets(Shapes shape, int& preRotation
     return {0};
 }
 
+// Move tetrimino <---Left and Right--->
+void Tetrimino::move_tetrimino(std::array<Point, 4>& current, std::array<Point, 4>& previous, Matrix& matrix, int dx)
+{
+        for(int i = 0; i < 4; i++)
+        {
+            previous[i] = current[i];
+            current[i].x += dx;
+        }
+        if(!matrix.check(current, matrix))
+        {
+            for(int i = 0; i < 4; i++)
+            {
+                current[i] = previous[i];
+            }
+        }
+
+}
 
 // Try to rotate the tetrimino!
 void Tetrimino::rotate(Matrix& matrix, Shapes tetriminoShape, std::array<Point, 4> &current, std::array<Point, 4> &previous, int& rotationState, bool isRotateRight)
@@ -237,7 +254,6 @@ void Tetrimino::rotate(Matrix& matrix, Shapes tetriminoShape, std::array<Point, 
     // Try to kick wall
     current = kickWall(matrix, current, previous, offsets, preRotationState, rotationState);
 }
-
 
 // Kick wall, if valid, return it, invalid, return previous one
 std::array<Point, 4> Tetrimino::kickWall(Matrix& matrix, std::array<Point, 4>& current, std::array<Point, 4>& previous, const std::array<Point, 5>& offsets, int& preRotationState, int& rotationState)
