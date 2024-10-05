@@ -22,6 +22,45 @@ const std::array<std::array<int, 4>, 7> Tetrimino::get_tetrimino()
     return shapes;
 }
 
+// Get ghost tetrimino
+const std::array<Point, 4> Tetrimino::get_ghost_tetrimino(Matrix& matrix, std::array<Point, 4>& current)
+{
+    bool keep_falling = true;
+    int total_movement = 0;
+    std::array<Point, 4> ghost = current;
+
+    while(keep_falling)
+    {
+        total_movement++;
+
+        for(auto& point : current)
+        {
+            if(point.y + total_movement == ROWS)
+            {
+                keep_falling = false;
+                break;
+            }
+
+            if(point.y + total_movement < 0)
+            {
+                continue;
+            }
+            else if(matrix.m_matrix[point.y + total_movement][point.x] > 0)
+            {
+                keep_falling = false;
+                break;
+            }
+        }
+    }
+
+    for(auto& point : ghost)
+    {
+        point.y += total_movement - 1;
+    }
+
+    return ghost;
+}
+
 // Generate 7-bag
 std::array<Shapes, 7> Tetrimino::gen7Bag()
 {

@@ -19,9 +19,14 @@ int main()
     t3.setSmooth(true);
 
     sf::Sprite tiles(t1), background(t2), frame(t3);
+    sf::Sprite ghost_tiles(t1);
     tiles.setScale(2, 2);
+    ghost_tiles.setScale(2, 2);
     background.setScale(2, 2);
     frame.setScale(2, 2);
+
+    sf::Color transparency(255, 255, 255, 128);
+    ghost_tiles.setColor(transparency);
     /* Textures */
 
     // Creat random engine
@@ -47,10 +52,15 @@ int main()
     // Variables related to rotation
     bool isRotateRight = false;
     bool isRotateLeft = false;
+    bool isLock = false;
     int rotationState = 0;
 
     // Timer and delay
-    float timer = 0, delay = 100.f;
+    float timer = 0, delay = 0.3f;
+    float lock_delay = 0;
+    int lock_times = 15;
+    bool hard_drop = false;
+
 
     // Init block, is important. If we don't do this, there will be problems with the first block
     Shapes tetriminoShape = matrix.generateTetromino(matrix, tetrimino, current, bag, bagIndex);
@@ -73,14 +83,25 @@ int main()
             if(event.type == sf::Event::Closed) window.close();
             if(event.type == sf::Event::KeyPressed)
             {
-                if(event.key.code == sf::Keyboard::Up) isRotateRight = true;
-                else if(event.key.code == sf::Keyboard::Z) isRotateLeft = true;
-                else if(event.key.code == sf::Keyboard::Left) dx = -1;
-                else if(event.key.code == sf::Keyboard::Right) dx = 1;
+                switch(event.key.code)
+                {
+                    case sf::Keyboard::Up: isRotateRight = true; break;
+                    case sf::Keyboard::Z:  isRotateLeft = true;  break;
+                    case sf::Keyboard::Left:    dx = -1;         break;
+                    case sf::Keyboard::Right:   dx = 1;          break;
+                    case sf::Keyboard::Space: hard_drop = true;  break;
+                }
             }
         }
-
+        // Soft drop
         if(sf::Keyboard::isKeyPressed(sf::Keyboard::Down)) delay = 0.05;
+
+        // Hard dorp
+        if(hard_drop)
+        {
+            current = tetrimino.get_ghost_tetrimino(matrix, current);
+            isLock = true;
+        }
 
 
         /* Move */
@@ -91,6 +112,7 @@ int main()
         if(isRotateRight || isRotateLeft)
         {
             tetrimino.rotate(matrix, tetriminoShape, current, previous, rotationState, isRotateRight);
+            lock_times++;
         }
 
 
@@ -109,7 +131,8 @@ int main()
         dx = 0;
         isRotateRight = false;
         isRotateLeft = false;
-        delay = 100.f;
+        hard_drop = false;
+        delay = 0.3f;
 
 
         /* Draw */
@@ -138,6 +161,16 @@ int main()
             window.draw(tiles);
         }
 
+        std::array<Point, 4> ghost = tetrimino.get_ghost_tetrimino(matrix, current);
+        for(auto& point : ghost)
+        {
+            // And again...
+            int colorIndex = static_cast<int>(tetriminoColor);
+            ghost_tiles.setTextureRect(sf::IntRect(colorIndex * 18, 0, 18, 18));
+            ghost_tiles.setPosition(point.x * 36, point.y * 36);
+            ghost_tiles.move(56, 62);
+            window.draw(ghost_tiles);
+        }
 
         window.draw(frame);
         window.display();
