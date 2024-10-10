@@ -16,7 +16,7 @@ bool Matrix::check(std::array<Point, 4>& current, Matrix& matrix)
     return true;
 }
 
-Shapes Matrix::generateTetromino(Matrix &matrix, Tetrimino& tetrimino,  std::array<Point, 4> &current, std::array<Shapes, 7> &bag, int &bagIndex)
+Shapes Matrix::generateShapes(Matrix &matrix, Tetrimino& tetrimino,  std::array<Point, 4> &current, std::array<Shapes, 7> &bag, int &bagIndex)
 {
     Shapes tetriminoShapes  = bag[bagIndex++];
     if(bagIndex == 7)
@@ -32,7 +32,7 @@ Shapes Matrix::generateTetromino(Matrix &matrix, Tetrimino& tetrimino,  std::arr
         for(int i = 0; i < 4; i++)
         {
             current[i].x = tetrimino.get_tetrimino()[tetriminoIndex][i] / 2 + (COLS / 2) - 2 ;
-            current[i].y = tetrimino.get_tetrimino()[tetriminoIndex][i] % 2;
+            current[i].y = tetrimino.get_tetrimino()[tetriminoIndex][i] % 2 + 18;
         }
 
     }
@@ -41,7 +41,7 @@ Shapes Matrix::generateTetromino(Matrix &matrix, Tetrimino& tetrimino,  std::arr
         for(int i = 0; i < 4; i++)
         {
             current[i].x = tetrimino.get_tetrimino()[tetriminoIndex][i] / 2 + (COLS / 2) - 3;
-            current[i].y = tetrimino.get_tetrimino()[tetriminoIndex][i] % 2;
+            current[i].y = tetrimino.get_tetrimino()[tetriminoIndex][i] % 2 + 18;
         }
     }
 
@@ -81,7 +81,7 @@ void Matrix::drop_and_generate(std::array<Point, 4> &current, std::array<Point, 
         }
 
         // int tetrominoIndex = genTetromino(gen);  // Real random Tetromino
-        tetriminoShape = matrix.generateTetromino(matrix, tetrimino, current, bag, bagIndex);
+        tetriminoShape = matrix.generateShapes(matrix, tetrimino, current, bag, bagIndex);
 
         // reset Rotation state
         rotationState = 0;
@@ -92,6 +92,40 @@ void Matrix::drop_and_generate(std::array<Point, 4> &current, std::array<Point, 
 
     timer = 0;
 
+}
+
+bool Matrix::drop_down(std::array<Point, 4>& current, std::array<Point, 4>& previous, Matrix& matrix)
+{
+    for(int i = 0; i < 4; i++)
+    {
+        previous[i] = current[i];
+        current[i].y += 1;
+    }
+
+    if(!matrix.check(current, matrix))
+    {
+        // Invalid when drop down, reset to previous then return current
+        // timer = 0;
+        return false;
+    }
+
+    return true;
+}
+
+void Matrix::lock_to_matrix(std::array<Point, 4>& previous, Matrix& matrix, Colors& tetriminoColor)
+{
+    int colorIndex = static_cast<int>(tetriminoColor);
+    for(auto& cell : previous)
+    {
+        matrix.m_matrix[cell.y][cell.x] = colorIndex;
+    }
+}
+
+void Matrix::generate_tetrimino(Matrix& matrix, Tetrimino& tetrimino, std::array<Point, 4>& current, Shapes& tetriminoShape, Colors& tetriminoColor, int& rotationState, std::array<Shapes, 7>& bag, int& bagIndex)
+{
+    tetriminoShape = matrix.generateShapes(matrix, tetrimino, current, bag, bagIndex);
+    tetriminoColor = matrix.judgeColor(tetriminoShape);
+    rotationState = 0;
 }
 
 void Matrix::clear_lines(Matrix& matrix)

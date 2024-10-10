@@ -1,6 +1,6 @@
 #pragma once
 
-constexpr int ROWS = 20;    // Width of matrix
+constexpr int ROWS = 40;    // Width of matrix
 constexpr int COLS = 10;    // Height of matrix
 
 struct Point{int x, y;};    // Positions of Tetrimino

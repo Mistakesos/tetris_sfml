@@ -63,7 +63,7 @@ int main()
 
 
     // Init block, is important. If we don't do this, there will be problems with the first block
-    Shapes tetriminoShape = matrix.generateTetromino(matrix, tetrimino, current, bag, bagIndex);
+    Shapes tetriminoShape = matrix.generateShapes(matrix, tetrimino, current, bag, bagIndex);
     // Init color
     Colors tetriminoColor = matrix.judgeColor(tetriminoShape);
 
@@ -100,6 +100,8 @@ int main()
         if(hard_drop)
         {
             current = tetrimino.get_ghost_tetrimino(matrix, current);
+            matrix.lock_to_matrix(current, matrix, tetriminoColor);
+            matrix.generate_tetrimino(matrix, tetrimino, current, tetriminoShape, tetriminoColor, rotationState, bag, bagIndex);
             isLock = true;
         }
 
@@ -119,7 +121,13 @@ int main()
         /* Drop down tetrimino then generate it */
         if(timer > delay)
         {
-            matrix.drop_and_generate(current, previous, matrix, tetrimino, bag, bagIndex, tetriminoShape, tetriminoColor, rotationState, timer);
+            // matrix.drop_and_generate(current, previous, matrix, tetrimino, bag, bagIndex, tetriminoShape, tetriminoColor, rotationState, timer);
+            if(!matrix.drop_down(current, previous, matrix))
+            {
+                matrix.lock_to_matrix(previous, matrix, tetriminoColor);
+                matrix.generate_tetrimino(matrix, tetrimino, current, tetriminoShape, tetriminoColor, rotationState, bag, bagIndex);
+            }
+            timer = 0;
         }
 
 
@@ -145,7 +153,7 @@ int main()
             {
                 if(matrix.m_matrix[i][j] == 0) continue;
                 tiles.setTextureRect(sf::IntRect(matrix.m_matrix[i][j] * 18, 0, 18, 18));
-                tiles.setPosition(j * 36, i * 36);
+                tiles.setPosition(j * 36, (i - 20) * 36);
                 tiles.move(56, 62);
                 window.draw(tiles);
             }
@@ -156,7 +164,7 @@ int main()
             // We need that again...
             int colorIndex = static_cast<int>(tetriminoColor);
             tiles.setTextureRect(sf::IntRect(colorIndex * 18, 0, 18, 18));
-            tiles.setPosition(current[i].x * 36, current[i].y * 36);
+            tiles.setPosition(current[i].x * 36, (current[i].y - 20) * 36);
             tiles.move(56, 62);
             window.draw(tiles);
         }
@@ -167,7 +175,7 @@ int main()
             // And again...
             int colorIndex = static_cast<int>(tetriminoColor);
             ghost_tiles.setTextureRect(sf::IntRect(colorIndex * 18, 0, 18, 18));
-            ghost_tiles.setPosition(point.x * 36, point.y * 36);
+            ghost_tiles.setPosition(point.x * 36, (point.y - 20) * 36);
             ghost_tiles.move(56, 62);
             window.draw(ghost_tiles);
         }
