@@ -6,7 +6,7 @@ Matrix::Matrix() = default;
 Matrix::~Matrix() = default;
 
 // Check is't valid move, touched wall or touched another tetrimino
-bool Matrix::check(std::array<Point, 4>& current, Matrix& matrix)
+bool Matrix::is_valid_move(std::array<Point, 4>& current, Matrix& matrix)
 {
     for(int i = 0; i < 4; i++)
     {
@@ -16,13 +16,13 @@ bool Matrix::check(std::array<Point, 4>& current, Matrix& matrix)
     return true;
 }
 
-Shapes Matrix::generateShapes(Matrix &matrix, Tetrimino& tetrimino,  std::array<Point, 4> &current, std::array<Shapes, 7> &bag, int &bagIndex)
+Shapes Matrix::generate_shapes(Matrix &matrix, Tetrimino& tetrimino,  std::array<Point, 4> &current, std::array<Shapes, 7> &bag, int &bagIndex)
 {
     Shapes tetriminoShapes  = bag[bagIndex++];
     if(bagIndex == 7)
     {
         bagIndex = 0;
-        bag = tetrimino.gen7Bag();
+        bag = tetrimino.generate_7bag();
     }
 
 
@@ -48,7 +48,7 @@ Shapes Matrix::generateShapes(Matrix &matrix, Tetrimino& tetrimino,  std::array<
     return tetriminoShapes;
 }
 
-Colors Matrix::judgeColor(Shapes tetriminoShape)
+Colors Matrix::judge_color(Shapes tetriminoShape)
 {
     switch(tetriminoShape)
     {
@@ -63,7 +63,7 @@ Colors Matrix::judgeColor(Shapes tetriminoShape)
     return Colors::CYAN;
 }
 
-void Matrix::drop_and_generate(std::array<Point, 4> &current, std::array<Point, 4> &previous, Matrix &matrix, Tetrimino& tetrimino, std::array<Shapes, 7>& bag, int& bagIndex, Shapes &tetriminoShape, Colors &tetriminoColor, int &rotationState, float &timer)
+bool Matrix::can_drop_down(std::array<Point, 4>& current, std::array<Point, 4>& previous, Matrix& matrix)
 {
     for(int i = 0; i < 4; i++)
     {
@@ -71,41 +71,8 @@ void Matrix::drop_and_generate(std::array<Point, 4> &current, std::array<Point, 
         current[i].y += 1;
     }
 
-    if(!matrix.check(current, matrix))
+    if(!matrix.is_valid_move(current, matrix))
     {
-        for(int i = 0; i < 4; i++)
-        {
-            // Sadly, we need the enum value again, but I still wanna use enum class, not classic enum|_|
-            int colorIndex = static_cast<int>(tetriminoColor);
-            matrix.m_matrix[previous[i].y][previous[i].x] = colorIndex;
-        }
-
-        // int tetrominoIndex = genTetromino(gen);  // Real random Tetromino
-        tetriminoShape = matrix.generateShapes(matrix, tetrimino, current, bag, bagIndex);
-
-        // reset Rotation state
-        rotationState = 0;
-
-        // colorIndex = genColor(gen);  // Real random color
-        tetriminoColor = matrix.judgeColor(tetriminoShape);
-    }
-
-    timer = 0;
-
-}
-
-bool Matrix::drop_down(std::array<Point, 4>& current, std::array<Point, 4>& previous, Matrix& matrix)
-{
-    for(int i = 0; i < 4; i++)
-    {
-        previous[i] = current[i];
-        current[i].y += 1;
-    }
-
-    if(!matrix.check(current, matrix))
-    {
-        // Invalid when drop down, reset to previous then return current
-        // timer = 0;
         return false;
     }
 
@@ -123,8 +90,8 @@ void Matrix::lock_to_matrix(std::array<Point, 4>& previous, Matrix& matrix, Colo
 
 void Matrix::generate_tetrimino(Matrix& matrix, Tetrimino& tetrimino, std::array<Point, 4>& current, Shapes& tetriminoShape, Colors& tetriminoColor, int& rotationState, std::array<Shapes, 7>& bag, int& bagIndex)
 {
-    tetriminoShape = matrix.generateShapes(matrix, tetrimino, current, bag, bagIndex);
-    tetriminoColor = matrix.judgeColor(tetriminoShape);
+    tetriminoShape = matrix.generate_shapes(matrix, tetrimino, current, bag, bagIndex);
+    tetriminoColor = matrix.judge_color(tetriminoShape);
     rotationState = 0;
 }
 

@@ -62,7 +62,7 @@ const std::array<Point, 4> Tetrimino::get_ghost_tetrimino(Matrix& matrix, std::a
 }
 
 // Generate 7-bag
-std::array<Shapes, 7> Tetrimino::gen7Bag()
+std::array<Shapes, 7> Tetrimino::generate_7bag()
 {
     std::random_device rd;
     std::mt19937 gen(rd());
@@ -163,7 +163,7 @@ void Tetrimino::move_tetrimino(std::array<Point, 4>& current, std::array<Point, 
             previous[i] = current[i];
             current[i].x += dx;
         }
-        if(!matrix.check(current, matrix))
+        if(!matrix.is_valid_move(current, matrix))
         {
             for(int i = 0; i < 4; i++)
             {
@@ -274,7 +274,7 @@ void Tetrimino::rotate(Matrix& matrix, Shapes tetriminoShape, std::array<Point, 
         }
     }
 
-    if(matrix.check(current, matrix))
+    if(matrix.is_valid_move(current, matrix))
     {
         // Is valid rotation, return then update rotation state
         rotationState = (isRotateRight) ? (rotationState + 1) % 4 : (rotationState + 3) % 4;
@@ -291,11 +291,11 @@ void Tetrimino::rotate(Matrix& matrix, Shapes tetriminoShape, std::array<Point, 
     const auto offsets = get_offsets(tetriminoShape, preRotationState, rotationState);
 
     // Try to kick wall
-    current = kickWall(matrix, current, previous, offsets, preRotationState, rotationState);
+    current = kick_wall(matrix, current, previous, offsets, preRotationState, rotationState);
 }
 
 // Kick wall, if valid, return it, invalid, return previous one
-std::array<Point, 4> Tetrimino::kickWall(Matrix& matrix, std::array<Point, 4>& current, std::array<Point, 4>& previous, const std::array<Point, 5>& offsets, int& preRotationState, int& rotationState)
+std::array<Point, 4> Tetrimino::kick_wall(Matrix& matrix, std::array<Point, 4>& current, std::array<Point, 4>& previous, const std::array<Point, 5>& offsets, int& preRotationState, int& rotationState)
 {
 
     // Try to kick wall --plus the offsets, try 5 times
@@ -311,7 +311,7 @@ std::array<Point, 4> Tetrimino::kickWall(Matrix& matrix, std::array<Point, 4>& c
             current[j].y += dy;
         }
 
-        if(matrix.check(current, matrix))
+        if(matrix.is_valid_move(current, matrix))
         {
             // If it's valid after kick wall, return current(kicked)
             return current;

@@ -26,8 +26,8 @@ public:
     
     void rotate(Matrix& matrix, Shapes tetriminoShape, std::array<Point, 4>& current, std::array<Point, 4>& previous, int& rotationState, bool isRotateRight);
 
-    std::array<Point, 4> kickWall(Matrix& matrix, std::array<Point, 4>& current, std::array<Point, 4>& previous, const std::array<Point, 5>& offsets, int& preRotationState, int& rotationState);
+    std::array<Point, 4> kick_wall(Matrix& matrix, std::array<Point, 4>& current, std::array<Point, 4>& previous, const std::array<Point, 5>& offsets, int& preRotationState, int& rotationState);
     
-    std::array<Shapes, 7> gen7Bag();
+    std::array<Shapes, 7> generate_7bag();
 
 };

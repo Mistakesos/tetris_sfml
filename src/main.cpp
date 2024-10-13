@@ -43,7 +43,7 @@ int main()
     std::array<Point, 4> current, previous;
 
     // Generate 7-bag
-    std::array<Shapes, 7> bag = tetrimino.gen7Bag();
+    std::array<Shapes, 7> bag = tetrimino.generate_7bag();
     int bagIndex = 0;
 
     // Offset of X
@@ -63,9 +63,9 @@ int main()
 
 
     // Init block, is important. If we don't do this, there will be problems with the first block
-    Shapes tetriminoShape = matrix.generateShapes(matrix, tetrimino, current, bag, bagIndex);
+    Shapes tetriminoShape = matrix.generate_shapes(matrix, tetrimino, current, bag, bagIndex);
     // Init color
-    Colors tetriminoColor = matrix.judgeColor(tetriminoShape);
+    Colors tetriminoColor = matrix.judge_color(tetriminoShape);
 
     // Game main loop
     while(window.isOpen())
@@ -93,6 +93,7 @@ int main()
                 }
             }
         }
+
         // Soft drop
         if(sf::Keyboard::isKeyPressed(sf::Keyboard::Down)) delay = 0.05;
 
@@ -118,11 +119,11 @@ int main()
         }
 
 
-        /* Drop down tetrimino then generate it */
+        /* Drop down tetrimino then generate */
         if(timer > delay)
         {
             // matrix.drop_and_generate(current, previous, matrix, tetrimino, bag, bagIndex, tetriminoShape, tetriminoColor, rotationState, timer);
-            if(!matrix.drop_down(current, previous, matrix))
+            if(!matrix.can_drop_down(current, previous, matrix))
             {
                 matrix.lock_to_matrix(previous, matrix, tetriminoColor);
                 matrix.generate_tetrimino(matrix, tetrimino, current, tetriminoShape, tetriminoColor, rotationState, bag, bagIndex);
