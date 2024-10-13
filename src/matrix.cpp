@@ -16,6 +16,19 @@ bool Matrix::is_valid_move(std::array<Point, 4>& current, Matrix& matrix)
     return true;
 }
 
+bool Matrix::is_game_over(std::array<Point, 4> current, Matrix &matrix)
+{
+    for(auto& cell : current)
+    {
+        if(matrix.m_matrix[cell.y][cell.x])
+        {
+            return true;
+        }
+    }
+    return false;
+}
+
+
 Shapes Matrix::generate_shapes(Matrix &matrix, Tetrimino& tetrimino,  std::array<Point, 4> &current, std::array<Shapes, 7> &bag, int &bagIndex)
 {
     Shapes tetriminoShapes  = bag[bagIndex++];

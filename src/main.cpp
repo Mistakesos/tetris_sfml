@@ -103,6 +103,10 @@ int main()
             current = tetrimino.get_ghost_tetrimino(matrix, current);
             matrix.lock_to_matrix(current, matrix, tetriminoColor);
             matrix.generate_tetrimino(matrix, tetrimino, current, tetriminoShape, tetriminoColor, rotationState, bag, bagIndex);
+            if(matrix.is_game_over(current, matrix))
+            {
+                return 0;
+            }
             isLock = true;
         }
 
@@ -127,6 +131,10 @@ int main()
             {
                 matrix.lock_to_matrix(previous, matrix, tetriminoColor);
                 matrix.generate_tetrimino(matrix, tetrimino, current, tetriminoShape, tetriminoColor, rotationState, bag, bagIndex);
+                if(matrix.is_game_over(current, matrix))
+                {
+                    return 0;
+                }
             }
             timer = 0;
         }

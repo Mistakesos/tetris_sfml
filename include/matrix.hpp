@@ -20,6 +20,8 @@ public:
 
     bool is_touch_ground(std::array<Point, 4>&);
 
+    bool is_game_over(std::array<Point, 4> current, Matrix& matrix);
+
     Shapes generate_shapes(Matrix& matrix, Tetrimino& tetromino, std::array<Point, 4>& current, std::array<Shapes, 7>& bag, int& bagIndex);
 
     Colors judge_color(Shapes tetriminoShape);
