@@ -156,35 +156,37 @@ const std::array<Point, 5> Tetrimino::get_offsets(Shapes shape, int& preRotation
 }
 
 // Move tetrimino <---Left and Right--->
-void Tetrimino::move_tetrimino(std::array<Point, 4>& current, std::array<Point, 4>& previous, Matrix& matrix, int dx)
+void Tetrimino::move_tetrimino(std::array<Point, 4>& current, std::array<Point, 4>& previous, Matrix& matrix, int dx, int& lockMoveTimes)
 {
-        for(int i = 0; i < 4; i++)
+        previous = current;
+
+        for(auto& cell : current)
         {
-            previous[i] = current[i];
-            current[i].x += dx;
+            cell.x += dx;
         }
+
         if(!matrix.is_valid_move(current, matrix))
         {
-            for(int i = 0; i < 4; i++)
+            current = previous;
+        }
+        else
+        {
+            if(matrix.is_touch_ground(current, matrix))
             {
-                current[i] = previous[i];
+                lockMoveTimes++;
             }
         }
 
 }
 
 // Try to rotate the tetrimino!
-void Tetrimino::rotate(Matrix& matrix, Shapes tetriminoShape, std::array<Point, 4> &current, std::array<Point, 4> &previous, int& rotationState, bool isRotateRight)
+void Tetrimino::rotate(Matrix& matrix, Shapes tetriminoShape, std::array<Point, 4> &current, std::array<Point, 4> &previous, int& rotationState, bool isRotateRight, int& lockMoveTimes)
 {
     Point center = current[2];
 
     previous = current;
 
-    // if(tetriminoShape == Shapes::O)
-    // {
-    //     // O needn't ratate so far
-    //     return;
-    // }
+    bool isTouchGround = matrix.is_touch_ground(current, matrix);
 
     if(tetriminoShape == Shapes::I || tetriminoShape == Shapes::O)
     {
@@ -276,6 +278,7 @@ void Tetrimino::rotate(Matrix& matrix, Shapes tetriminoShape, std::array<Point, 
 
     if(matrix.is_valid_move(current, matrix))
     {
+        if(isTouchGround) lockMoveTimes++;
         // Is valid rotation, return then update rotation state
         rotationState = (isRotateRight) ? (rotationState + 1) % 4 : (rotationState + 3) % 4;
         return;
@@ -291,11 +294,11 @@ void Tetrimino::rotate(Matrix& matrix, Shapes tetriminoShape, std::array<Point, 
     const auto offsets = get_offsets(tetriminoShape, preRotationState, rotationState);
 
     // Try to kick wall
-    current = kick_wall(matrix, current, previous, offsets, preRotationState, rotationState);
+    current = kick_wall(matrix, current, previous, offsets, preRotationState, rotationState, lockMoveTimes, isTouchGround);
 }
 
 // Kick wall, if valid, return it, invalid, return previous one
-std::array<Point, 4> Tetrimino::kick_wall(Matrix& matrix, std::array<Point, 4>& current, std::array<Point, 4>& previous, const std::array<Point, 5>& offsets, int& preRotationState, int& rotationState)
+std::array<Point, 4> Tetrimino::kick_wall(Matrix& matrix, std::array<Point, 4>& current, std::array<Point, 4>& previous, const std::array<Point, 5>& offsets, int& preRotationState, int& rotationState, int& lockMoveTimes, bool& isTouchGround)
 {
 
     // Try to kick wall --plus the offsets, try 5 times
@@ -313,6 +316,11 @@ std::array<Point, 4> Tetrimino::kick_wall(Matrix& matrix, std::array<Point, 4>& 
 
         if(matrix.is_valid_move(current, matrix))
         {
+            // Is touch ground after kick wall?
+            if(isTouchGround)
+            {
+                lockMoveTimes++;
+            }
             // If it's valid after kick wall, return current(kicked)
             return current;
         }

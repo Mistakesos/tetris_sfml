@@ -16,11 +16,11 @@ public:
     
     std::vector<std::vector<int>> m_matrix;
 
-    bool is_valid_move(std::array<Point, 4>& current, Matrix& matrix);
+    bool is_valid_move(std::array<Point, 4> current, Matrix& matrix) const;
 
-    bool is_touch_ground(std::array<Point, 4>&);
+    bool is_touch_ground(std::array<Point, 4> current, Matrix& matrix) const;
 
-    bool is_game_over(std::array<Point, 4> current, Matrix& matrix);
+    bool is_game_over(std::array<Point, 4> current, Matrix& matrix) const;
 
     Shapes generate_shapes(Matrix& matrix, Tetrimino& tetromino, std::array<Point, 4>& current, std::array<Shapes, 7>& bag, int& bagIndex);
 

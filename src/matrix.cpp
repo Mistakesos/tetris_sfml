@@ -6,7 +6,7 @@ Matrix::Matrix() = default;
 Matrix::~Matrix() = default;
 
 // Check is't valid move, touched wall or touched another tetrimino
-bool Matrix::is_valid_move(std::array<Point, 4>& current, Matrix& matrix)
+bool Matrix::is_valid_move(std::array<Point, 4> current, Matrix& matrix) const
 {
     for(int i = 0; i < 4; i++)
     {
@@ -16,7 +16,19 @@ bool Matrix::is_valid_move(std::array<Point, 4>& current, Matrix& matrix)
     return true;
 }
 
-bool Matrix::is_game_over(std::array<Point, 4> current, Matrix &matrix)
+bool Matrix::is_touch_ground(std::array<Point, 4> current, Matrix& matrix) const
+{
+    for(auto& cell : current)
+    {
+        cell.y += 1;
+        if(cell.y >= ROWS) return true;
+        else if(matrix.m_matrix[cell.y][cell.x]) return true;
+    }
+
+    return false;
+}
+
+bool Matrix::is_game_over(std::array<Point, 4> current, Matrix &matrix) const
 {
     for(auto& cell : current)
     {
