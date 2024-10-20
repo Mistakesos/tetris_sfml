@@ -311,7 +311,7 @@ std::array<Point, 4> Tetrimino::kick_wall(Matrix& matrix, std::array<Point, 4>& 
         for(int j = 0; j < 4; j++)
         {
             current[j].x += dx;
-            current[j].y += dy;
+            current[j].y -= dy;
         }
 
         if(matrix.is_valid_move(current, matrix))
@@ -330,7 +330,7 @@ std::array<Point, 4> Tetrimino::kick_wall(Matrix& matrix, std::array<Point, 4>& 
             for(int j = 0; j < 4; j++)
             {
                 current[j].x -= dx;
-                current[j].y -= dy;
+                current[j].y += dy;
             }
         }
     }
