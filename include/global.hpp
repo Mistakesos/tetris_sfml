@@ -3,7 +3,7 @@
 constexpr int ROWS = 40;    // Width of matrix
 constexpr int COLS = 10;    // Height of matrix
 
-constexpr int MAX_LOCK_MOVE = 15;
+constexpr int MAX_LOCK_DELAY_ACTION = 15;
 
 struct Point{int x, y;};    // Positions of Tetrimino
 

@@ -16,9 +16,9 @@ public:
     
     std::vector<std::vector<int>> m_matrix;
 
-    bool is_valid_move(std::array<Point, 4> current, Matrix& matrix) const;
+    bool is_valid_move(std::array<Point, 4>& current, Matrix& matrix) const;
 
-    bool is_touch_ground(std::array<Point, 4> current, Matrix& matrix) const;
+    bool is_touch_ground(std::array<Point, 4>& current, Matrix& matrix) const;
 
     bool is_game_over(std::array<Point, 4> current, Matrix& matrix) const;
 
@@ -26,7 +26,7 @@ public:
 
     Colors judge_color(Shapes tetriminoShape);
 
-    bool can_drop_down(std::array<Point, 4>& current, std::array<Point, 4>& previous, Matrix& matrix);
+    void drop_down(std::array<Point, 4>& current, std::array<Point, 4>& previous);
 
     void lock_to_matrix(std::array<Point, 4>& previous, Matrix& matrix, Colors& tetriminoColor);
 

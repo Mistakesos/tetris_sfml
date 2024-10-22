@@ -35,6 +35,7 @@ int main()
 
     // Init timer
     sf::Clock clock;
+    sf::Clock lockClock;
 
     // Init game matrix and tetrimino
     Matrix matrix;
@@ -52,14 +53,16 @@ int main()
     // Variables related to rotation
     bool isRotateRight = false;
     bool isRotateLeft = false;
-    bool isLock = false;
     int rotationState = 0;
 
-    // Timer and delay
-    float timer = 0, delay = 0.3f;
-    float lock_delay = 0;
-    int lock_move_times = 0;
+    // Harrrd drop
     bool hard_drop = false;
+
+    // Timer, delay and actions
+    float timer = 0, delay = 0.3f;
+    float lockTimer = 0, lockDelay = 3.f;
+
+    int lockDelayAction = 0;
 
 
     // Init block, is important. If we don't do this, there will be problems with the first block
@@ -85,10 +88,10 @@ int main()
             {
                 switch(event.key.code)
                 {
-                    case sf::Keyboard::Up: isRotateRight = true; if(isRotateRight || isRotateLeft){tetrimino.rotate(matrix, tetriminoShape, current, previous, rotationState, isRotateRight, lock_move_times);} break;
-                    case sf::Keyboard::Z:  isRotateLeft = true;  if(isRotateRight || isRotateLeft){tetrimino.rotate(matrix, tetriminoShape, current, previous, rotationState, isRotateRight, lock_move_times);} break;
-                    case sf::Keyboard::Left:    dx = -1;         tetrimino.move_tetrimino(current, previous, matrix, dx, lock_move_times); break;
-                    case sf::Keyboard::Right:   dx = 1;          tetrimino.move_tetrimino(current, previous, matrix, dx, lock_move_times); break;
+                    case sf::Keyboard::Up: isRotateRight = true; if(isRotateRight || isRotateLeft){tetrimino.rotate(matrix, tetriminoShape, current, previous, rotationState, isRotateRight, lockDelayAction, lockClock, lockTimer);} break;
+                    case sf::Keyboard::Z:  isRotateLeft = true;  if(isRotateRight || isRotateLeft){tetrimino.rotate(matrix, tetriminoShape, current, previous, rotationState, isRotateRight, lockDelayAction, lockClock, lockTimer);} break;
+                    case sf::Keyboard::Left:    dx = -1;         tetrimino.move_tetrimino(current, previous, matrix, dx, lockDelayAction, lockClock, lockTimer); break;
+                    case sf::Keyboard::Right:   dx = 1;          tetrimino.move_tetrimino(current, previous, matrix, dx, lockDelayAction, lockClock, lockTimer); break;
                     case sf::Keyboard::Space: hard_drop = true;  break;
                 }
             }
@@ -107,40 +110,36 @@ int main()
             {
                 return 0;
             }
-            isLock = true;
         }
 
 
         /* Move */
-        // tetrimino.move_tetrimino(current, previous, matrix, dx, lock_move_times);
 
 
         /* Rotate */
-        // if(isRotateRight || isRotateLeft)
-        // {
-        //     tetrimino.rotate(matrix, tetriminoShape, current, previous, rotationState, isRotateRight, lock_move_times);
-        // }
+        
 
-
-        /* Drop down tetrimino then generate */
+        /* Drop down tetrimino */
         if(timer > delay)
         {
-            // matrix.drop_and_generate(current, previous, matrix, tetrimino, bag, bagIndex, tetriminoShape, tetriminoColor, rotationState, timer);
-            if(!matrix.can_drop_down(current, previous, matrix))
-            {
-                current = previous;
-                if(lock_move_times >= MAX_LOCK_MOVE)
-                {
-                    lock_move_times = 0;
-                    matrix.lock_to_matrix(previous, matrix, tetriminoColor);
-                    matrix.generate_tetrimino(matrix, tetrimino, current, tetriminoShape, tetriminoColor, rotationState, bag, bagIndex);
-                    if(matrix.is_game_over(current, matrix))
-                    {
-                        return 0;
-                    }
-                }
-            }
+            matrix.drop_down(current, previous);
+            if(!matrix.is_valid_move(current, matrix)) {current = previous;}
             timer = 0;
+        }
+
+        /* Lock to matrix */ 
+        if(matrix.is_touch_ground(current, matrix))
+        {
+            lockTimer += lockClock.getElapsedTime().asSeconds();
+            lockClock.restart();
+            if(lockDelayAction >= MAX_LOCK_DELAY_ACTION || lockTimer > lockDelay)
+            {
+                lockTimer = 0;
+                lockDelayAction = 0;
+                matrix.lock_to_matrix(current, matrix, tetriminoColor);
+                matrix.generate_tetrimino(matrix, tetrimino, current, tetriminoShape, tetriminoColor, rotationState, bag, bagIndex);
+                if(matrix.is_game_over(current, matrix)) {return 0;}
+            }
         }
 
 
