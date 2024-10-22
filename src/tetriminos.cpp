@@ -168,14 +168,20 @@ void Tetrimino::move_tetrimino(std::array<Point, 4>& current, std::array<Point, 
         if(!matrix.is_valid_move(current, matrix))
         {
             current = previous;
+            lockTimer += lockClock.getElapsedTime().asSeconds();
         }
         else
         {
             if(matrix.is_touch_ground(current, matrix))
             {
                 lockTimer = 0;
-                // lockClock.restart();
+                lockClock.restart();
                 lockDelayAction++;
+            }
+            else
+            {
+                lockTimer = 0;
+                lockClock.restart();
             }
         }
 
@@ -283,7 +289,7 @@ void Tetrimino::rotate(Matrix& matrix, Shapes tetriminoShape, std::array<Point, 
         if(isTouchGround)
         {
             lockTimer = 0;
-            // lockClock.restart();
+            lockClock.restart();
             lockDelayAction++;
         }
         // Is valid rotation, return then update rotation state
@@ -324,7 +330,7 @@ std::array<Point, 4> Tetrimino::kick_wall(Matrix& matrix, std::array<Point, 4>& 
         if(matrix.is_valid_move(current, matrix))
         {
             lockTimer = 0;
-            // lockClock.restart();
+            lockClock.restart();
             // If is touch ground before rotate, action plus one
             if(isTouchGround) {lockDelayAction++;}
             // If it's valid after kick wall, return current(kicked)
@@ -344,6 +350,7 @@ std::array<Point, 4> Tetrimino::kick_wall(Matrix& matrix, std::array<Point, 4>& 
     // All positions is invalid after kick wall, reset rotation state to previous rotation state, then return previous tetrimino
     current = previous;
     rotationState = preRotationState;
+    lockTimer += lockClock.getElapsedTime().asSeconds();
 
     return current;
 }

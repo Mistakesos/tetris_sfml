@@ -60,7 +60,7 @@ int main()
 
     // Timer, delay and actions
     float timer = 0, delay = 0.3f;
-    float lockTimer = 0, lockDelay = 3.f;
+    float lockTimer = 0, lockDelay = 0.5f;
 
     int lockDelayAction = 0;
 
@@ -111,27 +111,26 @@ int main()
                 return 0;
             }
         }
-
-
-        /* Move */
-
-
-        /* Rotate */
         
 
         /* Drop down tetrimino */
         if(timer > delay)
         {
             matrix.drop_down(current, previous);
-            if(!matrix.is_valid_move(current, matrix)) {current = previous;}
+            if(!matrix.is_valid_move(current, matrix)) {current = previous; lockTimer += lockClock.getElapsedTime().asSeconds();}
+            else{lockClock.restart(); lockTimer = 0;}
             timer = 0;
         }
+
 
         /* Lock to matrix */ 
         if(matrix.is_touch_ground(current, matrix))
         {
+            if(lockTimer == 0) {lockClock.restart();}
+
             lockTimer += lockClock.getElapsedTime().asSeconds();
             lockClock.restart();
+            
             if(lockDelayAction >= MAX_LOCK_DELAY_ACTION || lockTimer > lockDelay)
             {
                 lockTimer = 0;
