@@ -3,6 +3,8 @@
 constexpr int ROWS = 40;    // Width of matrix
 constexpr int COLS = 10;    // Height of matrix
 
+constexpr int MAX_LOCK_DELAY_ACTION = 15;
+
 struct Point{int x, y;};    // Positions of Tetrimino
 
 enum class Shapes{I,Z,S,T,J,L,O};

@@ -6,7 +6,7 @@ Matrix::Matrix() = default;
 Matrix::~Matrix() = default;
 
 // Check is't valid move, touched wall or touched another tetrimino
-bool Matrix::is_valid_move(std::array<Point, 4>& current, Matrix& matrix)
+bool Matrix::is_valid_move(std::array<Point, 4>& current, Matrix& matrix) const
 {
     for(int i = 0; i < 4; i++)
     {
@@ -16,7 +16,27 @@ bool Matrix::is_valid_move(std::array<Point, 4>& current, Matrix& matrix)
     return true;
 }
 
-bool Matrix::is_game_over(std::array<Point, 4> current, Matrix &matrix)
+bool Matrix::is_touch_ground(std::array<Point, 4> &current, Matrix &matrix) const
+{
+    for(auto& cell : current)
+    {
+        auto tempCell = cell;
+        tempCell.y += 1;
+
+        if(tempCell.y >= ROWS)
+        {
+            return true;
+        }
+        else if(matrix.m_matrix[tempCell.y][tempCell.x])
+        {
+            return true;
+        }
+    }
+
+    return false;
+}
+
+bool Matrix::is_game_over(std::array<Point, 4> current, Matrix &matrix) const
 {
     for(auto& cell : current)
     {
@@ -76,20 +96,14 @@ Colors Matrix::judge_color(Shapes tetriminoShape)
     return Colors::CYAN;
 }
 
-bool Matrix::can_drop_down(std::array<Point, 4>& current, std::array<Point, 4>& previous, Matrix& matrix)
+void Matrix::drop_down(std::array<Point, 4>& current, std::array<Point, 4>& previous)
 {
-    for(int i = 0; i < 4; i++)
-    {
-        previous[i] = current[i];
-        current[i].y += 1;
-    }
+    previous = current;
 
-    if(!matrix.is_valid_move(current, matrix))
+    for(auto& cell : current)
     {
-        return false;
+        cell.y += 1;
     }
-
-    return true;
 }
 
 void Matrix::lock_to_matrix(std::array<Point, 4>& previous, Matrix& matrix, Colors& tetriminoColor)
