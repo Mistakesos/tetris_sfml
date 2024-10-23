@@ -1,5 +1,6 @@
 #include <array>
 #include <vector>
+#include <ranges>
 #include <SFML/Graphics.hpp>
 #include "global.hpp"
 #include "matrix.hpp"
@@ -20,8 +21,10 @@ int main()
 
     sf::Sprite tiles(t1), background(t2), frame(t3);
     sf::Sprite ghost_tiles(t1);
+    sf::Sprite holdTiles(t1);
     tiles.setScale(2, 2);
     ghost_tiles.setScale(2, 2);
+    holdTiles.setScale(2, 2);
     background.setScale(2, 2);
     frame.setScale(2, 2);
 
@@ -41,7 +44,7 @@ int main()
     Matrix matrix;
     Tetrimino tetrimino;
     matrix.m_matrix = {ROWS, std::vector<int>(COLS, 0)};
-    std::array<Point, 4> current, previous;
+    std::array<Point, 4> current, previous, hold = {0};
 
     // Generate 7-bag
     std::array<Shapes, 7> bag = tetrimino.generate_7bag();
@@ -56,7 +59,14 @@ int main()
     int rotationState = 0;
 
     // Harrrd drop
-    bool hard_drop = false;
+    bool hardDrop = false;
+
+    // Hold
+    bool isHold = false;
+    bool hasHold = false;
+    static Shapes holdShape;
+    static Colors holdColor;
+
 
     // Timer, delay and actions
     float timer = 0, delay = 0.3f;
@@ -92,7 +102,8 @@ int main()
                     case sf::Keyboard::Z:  isRotateLeft = true;  if(isRotateRight || isRotateLeft){tetrimino.rotate(matrix, tetriminoShape, current, previous, rotationState, isRotateRight, lockDelayAction, lockClock, lockTimer);} break;
                     case sf::Keyboard::Left:    dx = -1;         tetrimino.move_tetrimino(current, previous, matrix, dx, lockDelayAction, lockClock, lockTimer); break;
                     case sf::Keyboard::Right:   dx = 1;          tetrimino.move_tetrimino(current, previous, matrix, dx, lockDelayAction, lockClock, lockTimer); break;
-                    case sf::Keyboard::Space: hard_drop = true;  break;
+                    case sf::Keyboard::C:   isHold = true;       break;
+                    case sf::Keyboard::Space: hardDrop = true;   break;
                 }
             }
         }
@@ -101,10 +112,11 @@ int main()
         if(sf::Keyboard::isKeyPressed(sf::Keyboard::Down)) delay = 0.05;
 
         // Hard dorp
-        if(hard_drop)
+        if(hardDrop)
         {
             current = tetrimino.get_ghost_tetrimino(matrix, current);
             matrix.lock_to_matrix(current, matrix, tetriminoColor);
+            hasHold = false;
             matrix.generate_tetrimino(matrix, tetrimino, current, tetriminoShape, tetriminoColor, rotationState, bag, bagIndex);
             if(matrix.is_game_over(current, matrix))
             {
@@ -112,16 +124,6 @@ int main()
             }
         }
         
-
-        /* Drop down tetrimino */
-        if(timer > delay)
-        {
-            matrix.drop_down(current, previous);
-            if(!matrix.is_valid_move(current, matrix)) {current = previous; lockTimer += lockClock.getElapsedTime().asSeconds();}
-            else{lockClock.restart(); lockTimer = 0;}
-            timer = 0;
-        }
-
 
         /* Lock to matrix */ 
         if(matrix.is_touch_ground(current, matrix))
@@ -136,9 +138,48 @@ int main()
                 lockTimer = 0;
                 lockDelayAction = 0;
                 matrix.lock_to_matrix(current, matrix, tetriminoColor);
+                hasHold = false;
+                holdShape = tetriminoShape;
+                holdColor = tetriminoColor;
                 matrix.generate_tetrimino(matrix, tetrimino, current, tetriminoShape, tetriminoColor, rotationState, bag, bagIndex);
                 if(matrix.is_game_over(current, matrix)) {return 0;}
             }
+        }
+
+
+        /* Hooooooooold */
+        if(!hasHold)
+        {
+            if(isHold)
+            {
+                if(std::ranges::all_of(hold, [](Point i){return i.x == 0 && i.y == 0;}))
+                {
+                    // iF hold is empty(All of array is zero)
+                    hold = current;
+                    holdShape = tetriminoShape;
+                    holdColor = tetriminoColor;
+                    matrix.generate_tetrimino(matrix, tetrimino, current, tetriminoShape, tetriminoColor, rotationState, bag, bagIndex);
+                    hasHold = true;
+                }
+                else
+                {
+                    tetriminoColor = holdColor;
+                    hasHold = true;
+                    hold = matrix.generate_hold_tetrimino(matrix, tetrimino, current, holdShape, rotationState);
+                    hold = {0};
+                }
+            }
+
+        }
+        
+
+        /* Drop down tetrimino */
+        if(timer > delay)
+        {
+            matrix.drop_down(current, previous);
+            if(!matrix.is_valid_move(current, matrix)) {current = previous; lockTimer += lockClock.getElapsedTime().asSeconds();}
+            else{lockClock.restart(); lockTimer = 0;}
+            timer = 0;
         }
 
 
@@ -150,7 +191,8 @@ int main()
         dx = 0;
         isRotateRight = false;
         isRotateLeft = false;
-        hard_drop = false;
+        hardDrop = false;
+        isHold = false;
         delay = 0.3f;
 
 

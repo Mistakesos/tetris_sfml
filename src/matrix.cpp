@@ -122,6 +122,31 @@ void Matrix::generate_tetrimino(Matrix& matrix, Tetrimino& tetrimino, std::array
     rotationState = 0;
 }
 
+std::array<Point, 4> Matrix::generate_hold_tetrimino(Matrix& matrix, Tetrimino& tetrimino, std::array<Point, 4>& current, Shapes& tetriminoShape, int& rotationState)
+{
+    int tetriminoIndex = static_cast<int>(tetriminoShape); // Bad luck, I need the enum value. And so far, I can't handle it!
+    if(tetriminoShape == Shapes::O || tetriminoShape == Shapes::I) // Tetromino is I, X need plus 1;
+    {
+        for(int i = 0; i < 4; i++)
+        {
+            current[i].x = tetrimino.get_tetrimino()[tetriminoIndex][i] / 2 + (COLS / 2) - 2 ;
+            current[i].y = tetrimino.get_tetrimino()[tetriminoIndex][i] % 2 + 18;
+        }
+
+    }
+    else
+    {
+        for(int i = 0; i < 4; i++)
+        {
+            current[i].x = tetrimino.get_tetrimino()[tetriminoIndex][i] / 2 + (COLS / 2) - 3;
+            current[i].y = tetrimino.get_tetrimino()[tetriminoIndex][i] % 2 + 18;
+        }
+    }
+
+    rotationState = 0;
+    return current;
+}
+
 void Matrix::clear_lines(Matrix& matrix)
 {
     int preLine = ROWS - 1;
@@ -136,3 +161,4 @@ void Matrix::clear_lines(Matrix& matrix)
         if(count < COLS) preLine--;
     }
 }
+

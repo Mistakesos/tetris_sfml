@@ -31,6 +31,8 @@ public:
     void lock_to_matrix(std::array<Point, 4>& previous, Matrix& matrix, Colors& tetriminoColor);
 
     void generate_tetrimino(Matrix& matrix, Tetrimino& tetrimino, std::array<Point, 4>& current, Shapes& tetriminoShape, Colors& tetriminoColor, int& rotationState, std::array<Shapes, 7>& bag, int& bagIndex);
+
+    std::array<Point, 4> generate_hold_tetrimino(Matrix& matrix, Tetrimino& tetrimino, std::array<Point, 4>& current, Shapes& tetriminoShape, int& rotationState);
     
     void clear_lines(Matrix& matrix);
 };
