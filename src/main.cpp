@@ -163,10 +163,10 @@ int main()
                 }
                 else
                 {
+                    hold = {0};
                     tetriminoColor = holdColor;
                     hasHold = true;
                     hold = matrix.generate_hold_tetrimino(matrix, tetrimino, current, holdShape, rotationState);
-                    hold = {0};
                 }
             }
 
