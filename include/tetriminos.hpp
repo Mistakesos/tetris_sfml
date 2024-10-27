@@ -12,9 +12,16 @@ class Matrix;
 class Tetrimino
 {
 public:
+    // Tetrimino(Shapes shape, Colors color, States state);
     Tetrimino();
 
     ~Tetrimino();
+
+    Shapes mShape;
+
+    Colors mColor;
+
+    States mState;
 
     const std::array<std::array<int, 4>, 7> get_tetrimino();
 

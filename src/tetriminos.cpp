@@ -1,5 +1,10 @@
 #include "tetriminos.hpp"
 
+// Tetrimino::Tetrimino(Shapes shape, Colors color, States state)
+// : mShape(shape), mColor(color), mState(state)
+// {
+    
+// }
 Tetrimino::Tetrimino() = default;
 
 Tetrimino::~Tetrimino() = default;
